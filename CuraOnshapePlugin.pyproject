@@ -1,0 +1,3 @@
+{
+    "files": ["src/OnshapeFileProvider.py","src/__init__.py","src/OnshapeController.py","__init__.py","resources/qml/OnshapeMainDialog.qml","plugin.json"]
+}

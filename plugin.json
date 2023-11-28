@@ -1,0 +1,8 @@
+{
+    "name": "Onshape",
+    "author": "Erwan MATHIEU",
+    "version": "1.0.0",
+    "description": "Connects to Onshape to allow direct downloading of parts/assemblies to prepare them for 3D printing",
+    "api": 8,
+    "supported_sdk_versions": ["8.6.0"]
+}
