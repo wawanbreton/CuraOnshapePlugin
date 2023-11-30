@@ -1,5 +1,4 @@
-//Copyright (C) 2022 Ultimaker B.V.
-//Cura is released under the terms of the LGPLv3 or higher.
+# Copyright (c) 2023 Erwan MATHIEU
 
 import QtQuick 2.10
 import QtQuick.Window 2.2
@@ -25,9 +24,8 @@ Window
     }
     color: UM.Theme.getColor("main_background")
 
-    Label
+    ConnectionItem
     {
         anchors.fill: parent
-        text: "coucou !"
     }
 }

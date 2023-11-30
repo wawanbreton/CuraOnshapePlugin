@@ -6,7 +6,6 @@ from .src import OnshapeFileProvider, OnshapeController
 def getMetaData():
     return {}
 
-
 def register(app):
     controller = OnshapeController.OnshapeController(app)
     return {
