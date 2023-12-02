@@ -12,6 +12,9 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
+      - name: Add mask to hide secrets
+        run: echo "::add-mask::${{ secrets.ENCRYPTION_KEY }}"
+
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -22,6 +25,9 @@ jobs:
 
       - name: Create authentication file
         run: python .github/workflows/make_secrets.py
+
+      - name: Insert decryption key
+        run: sed -i 's/$ENCRYPTION_KEY/REPLACEMENT/g' src/OAuthController.py
 
       - name: Upload the authentication file
         uses: actions/upload-artifact@v3

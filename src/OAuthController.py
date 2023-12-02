@@ -22,26 +22,30 @@ class OAuthController(QObject):
 
 
         secrets_file_path = os.path.join(os.path.dirname(__file__), '..', 'resources', 'auth.json')
-        with open(secrets_file_path, "r") as secrets_file:
+        with open(secrets_file_path, "rb") as secrets_file:
             def xor_encrypt_decrypt(data, key):
                 return bytearray([data[i] ^ key[i % len(key)] for i in range(len(data))])
 
-            secrets_decrypted = xor_encrypt_decrypt(secrets_file.read(), 'ENCRYPTION_KEY'.encode('utf-8'))
+            encryption_key = '__ENCRYPTION_KEY__' # Replaced with actual key by runner
+            if encryption_key.startswith('__'):
+                # Dev mode
+                auth_key_path = os.path.join(os.path.dirname(__file__), '..', 'resources', 'auth_key')
+                encryption_key = open(auth_key_path, 'r').read()
+
+            secrets_decrypted = xor_encrypt_decrypt(secrets_file.read(), encryption_key.encode('utf-8'))
             json_data = json.loads(secrets_decrypted.decode("utf-8"))
-            print(json_data)
 
         callback_port = 35320
         oauth_settings = OAuth2Settings(
                     OAUTH_SERVER_URL=self.ROOT_AUTH_URL,
                     CALLBACK_PORT=callback_port,
                     CALLBACK_URL=f'http://localhost:{callback_port}/callback',
-                    CLIENT_ID='QHSPHFNZDYC2U4ZOPXMLW54E3K4R42LBH2YZNTQ=',
+                    CLIENT_ID=json_data['client_id'],
                     CLIENT_SCOPES='OAuth2Read',
                     AUTH_DATA_PREFERENCE_KEY='plugin_onshape/auth_data',
                     AUTH_SUCCESS_REDIRECT=f'https://oauth.onshape.com/oauth/token',
                     AUTH_FAILED_REDIRECT=f'{self.ROOT_AUTH_URL}/grantDenied'
                 )
-        Logger.debug(f'http://localhost:{callback_port}/callback')
 
         self._authorization_service = AuthorizationService(oauth_settings)
         self._authorization_service.initialize(self._application.getPreferences())
