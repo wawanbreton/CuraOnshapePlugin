@@ -1,0 +1,29 @@
+name: Build plugin
+
+env:
+  ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+  ONSHAPE_OAUTH_CLIENT_ID: ${{ secrets.ONSHAPE_OAUTH_CLIENT_ID }}
+  ONSHAPE_OAUTH_SECRET: ${{ secrets.ONSHAPE_OAUTH_SECRET }}
+
+jobs:
+  build-plugin:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10.x'
+
+      - name: Create authentication file
+        run: python .github/workflows/make_secrets.py
+
+      - name: Upload the authentication file
+        uses: actions/upload-artifact@v3
+        with:
+          name: auth.json
+          path: auth.json
+          retention-days: 10
