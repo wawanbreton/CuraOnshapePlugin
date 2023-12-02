@@ -1,6 +1,6 @@
 name: Build plugin
 
-on: push
+on: [push, workflow_dispatch]
 
 env:
   ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
