@@ -13,6 +13,5 @@ client_secret = os.getenv('ONSHAPE_OAUTH_SECRET')
 
 json_data = json.dumps({'client_id': client_id, 'client_secret': client_secret})
 
-with open('auth.json', 'wb') as file:
-    json_data_encrypted = xor_encrypt_decrypt(json_data, key)
-    file.write(json_data_encrypted.encode('utf-8'))
+with open('auth.json', 'w') as file:
+    file.write(xor_encrypt_decrypt(json_data, key))
