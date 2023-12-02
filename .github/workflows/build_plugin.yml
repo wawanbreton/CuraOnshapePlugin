@@ -1,5 +1,7 @@
 name: Build plugin
 
+on: push
+
 env:
   ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
   ONSHAPE_OAUTH_CLIENT_ID: ${{ secrets.ONSHAPE_OAUTH_CLIENT_ID }}
