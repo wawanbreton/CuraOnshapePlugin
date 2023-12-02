@@ -11,5 +11,4 @@ class OnshapeController(QObject):
         super().__init__(parent = None)
 
         self._application = application
-        #self._api = DigitalFactoryApiClient(self._application, on_error = lambda error: Logger.log("e", str(error)), projects_limit_per_page = 20)
-        self.auth_controller = OAuthController()
+        self.auth_controller = OAuthController(self._application)

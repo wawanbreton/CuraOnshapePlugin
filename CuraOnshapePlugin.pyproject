@@ -8,6 +8,8 @@
         "resources/qml/ConnectionItem.qml",
         "plugin.json",
         "src/OAuthController.py",
-        "src/OnshapeApi.py"
+        "src/OnshapeApi.py",
+        ".github/workflows/build_plugin.yml",
+        ".github/workflows/make_secrets.py"
     ]
 }
