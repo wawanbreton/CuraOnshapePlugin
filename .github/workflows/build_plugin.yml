@@ -27,7 +27,7 @@ jobs:
         run: python .github/workflows/make_secrets.py
 
       - name: Insert decryption key
-        run: sed -i 's/${{ secrets.ENCRYPTION_KEY }}/REPLACEMENT/g' src/OAuthController.py
+        run: sed -i 's/__ENCRYPTION_KEY__/${{ secrets.ENCRYPTION_KEY }}/g' src/OAuthController.py
 
       - name: Upload the authentication file
         uses: actions/upload-artifact@v3
