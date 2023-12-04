@@ -20,7 +20,6 @@ class OAuthController(QObject):
         self._application = application
         self._logged_in = False
 
-
         secrets_file_path = os.path.join(os.path.dirname(__file__), '..', 'resources', 'auth.json')
         with open(secrets_file_path, "rb") as secrets_file:
             def xor_encrypt_decrypt(data, key):
@@ -41,16 +40,17 @@ class OAuthController(QObject):
                     CALLBACK_PORT=callback_port,
                     CALLBACK_URL=f'http://localhost:{callback_port}/callback',
                     CLIENT_ID=json_data['client_id'],
+                    CLIENT_SECRET=json_data['client_secret'],
                     CLIENT_SCOPES='OAuth2Read',
                     AUTH_DATA_PREFERENCE_KEY='plugin_onshape/auth_data',
-                    AUTH_SUCCESS_REDIRECT=f'https://oauth.onshape.com/oauth/token',
-                    AUTH_FAILED_REDIRECT=f'{self.ROOT_AUTH_URL}/grantDenied'
+                    AUTH_SUCCESS_REDIRECT='https://cad.onshape.com',
+                    AUTH_FAILED_REDIRECT='https://cad.onshape.com'
                 )
 
         self._authorization_service = AuthorizationService(oauth_settings)
         self._authorization_service.initialize(self._application.getPreferences())
-        #self._authorization_service.onAuthStateChanged.connect(self._onLoginStateChanged)
-        #self._authorization_service.onAuthenticationError.connect(self._onLoginStateChanged)
+        self._authorization_service.onAuthStateChanged.connect(self._onLoginStateChanged)
+        self._authorization_service.onAuthenticationError.connect(self._onLoginStateChanged)
         self._authorization_service.accessTokenChanged.connect(self._onAccessTokenChanged)
         self._authorization_service.loadAuthDataFromPreferences()
 
@@ -58,7 +58,7 @@ class OAuthController(QObject):
     def login(self):
         self._authorization_service.startAuthorizationFlow()
 
-    def _onLoginStateChanged(self, logged_in, error_message):
+    def _onLoginStateChanged(self, logged_in, error_message=None):
         # if error_message:
         #     if self._error_message:
         #         self._error_message.hide()
@@ -73,12 +73,12 @@ class OAuthController(QObject):
         #         self._update_timer.stop()
         #     return
 
-        Logger.info('Onshape account logged in', logged_in)
+        Logger.info(f'ONSHAPE PLUGIN Onshape account logged in {logged_in}')
         if logged_in != self._logged_in:
             self._logged_in = logged_in
-            print(self._authorization_service.getAccessToken())
+            Logger.debug(self._authorization_service.getAccessToken())
             #self.loginStateChanged.emit(logged_in)
 
     def _onAccessTokenChanged(self):
-        print('access token changed')
-        self.accessTokenChanged.emit()
+        Logger.debug('ONSHAPE PLUGIN access token changed', self._authorization_service.getAccessToken())
+        #self.accessTokenChanged.emit()
