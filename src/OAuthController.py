@@ -3,8 +3,9 @@
 import os
 import json
 
-from PyQt6.QtCore import QObject, pyqtSlot
+from PyQt6.QtCore import QObject, pyqtSlot, pyqtSignal
 
+from UM.Qt.QtApplication import QtApplication
 from UM.Logger import Logger
 from cura.OAuth2.AuthorizationService import AuthorizationService
 from cura.OAuth2.Models import OAuth2Settings
@@ -14,11 +15,12 @@ class OAuthController(QObject):
 
     ROOT_AUTH_URL = 'https://oauth.onshape.com/oauth'
 
+    loggedIn = pyqtSignal()
+
     def __init__(self, application):
         super().__init__()
 
         self._application = application
-        self._logged_in = False
 
         secrets_file_path = os.path.join(os.path.dirname(__file__), '..', 'resources', 'auth.json')
         with open(secrets_file_path, "rb") as secrets_file:
@@ -47,7 +49,7 @@ class OAuthController(QObject):
                     AUTH_FAILED_REDIRECT='https://cad.onshape.com'
                 )
 
-        self._authorization_service = AuthorizationService(oauth_settings)
+        self._authorization_service = AuthorizationService(oauth_settings, get_user_profile=False)
         self._authorization_service.initialize(self._application.getPreferences())
         self._authorization_service.onAuthStateChanged.connect(self._onLoginStateChanged)
         self._authorization_service.onAuthenticationError.connect(self._onLoginStateChanged)
@@ -73,11 +75,12 @@ class OAuthController(QObject):
         #         self._update_timer.stop()
         #     return
 
+        if logged_in:
+            self.loggedIn.emit()
+            QtApplication.getInstance().getMainWindow().requestActivate()
+
         Logger.info(f'ONSHAPE PLUGIN Onshape account logged in {logged_in}')
-        if logged_in != self._logged_in:
-            self._logged_in = logged_in
-            Logger.debug(self._authorization_service.getAccessToken())
-            #self.loginStateChanged.emit(logged_in)
+        Logger.debug(self._authorization_service.getAccessToken())
 
     def _onAccessTokenChanged(self):
         Logger.debug('ONSHAPE PLUGIN access token changed', self._authorization_service.getAccessToken())
