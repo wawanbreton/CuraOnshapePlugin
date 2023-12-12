@@ -2,13 +2,10 @@
 
 from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot, pyqtProperty
 
-from .OAuthController import OAuthController
-
 
 class OnshapeController(QObject):
 
-    def __init__(self, application):
+    def __init__(self, auth_controller):
         super().__init__(parent = None)
 
-        self._application = application
-        self.auth_controller = OAuthController(self._application)
+        self._auth_controller = auth_controller

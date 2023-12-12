@@ -10,6 +10,7 @@
         "src/OAuthController.py",
         "src/OnshapeApi.py",
         ".github/workflows/build_plugin.yml",
-        ".github/workflows/make_secrets.py"
+        ".github/workflows/make_secrets.py",
+        "src/OnshapeApiAuthScope.py"
     ]
 }

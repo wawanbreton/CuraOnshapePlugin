@@ -1,13 +1,12 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from .src import OnshapeFileProvider, OnshapeController
+from .src import OnshapeFileProvider
 
 
 def getMetaData():
     return {}
 
 def register(app):
-    controller = OnshapeController.OnshapeController(app)
     return {
-        "file_provider": OnshapeFileProvider.OnshapeFileProvider(controller),
+        "file_provider": OnshapeFileProvider.OnshapeFileProvider(app),
     }

@@ -15,7 +15,7 @@ class OAuthController(QObject):
 
     ROOT_AUTH_URL = 'https://oauth.onshape.com/oauth'
 
-    loggedIn = pyqtSignal()
+    tokenChanged = pyqtSignal(str)
 
     def __init__(self, application):
         super().__init__()
@@ -76,12 +76,10 @@ class OAuthController(QObject):
         #     return
 
         if logged_in:
-            self.loggedIn.emit()
             QtApplication.getInstance().getMainWindow().requestActivate()
 
         Logger.info(f'ONSHAPE PLUGIN Onshape account logged in {logged_in}')
-        Logger.debug(self._authorization_service.getAccessToken())
 
     def _onAccessTokenChanged(self):
-        Logger.debug('ONSHAPE PLUGIN access token changed', self._authorization_service.getAccessToken())
-        #self.accessTokenChanged.emit()
+        Logger.debug('ONSHAPE PLUGIN access token changed {}', self._authorization_service.getAccessToken())
+        self.tokenChanged.emit(self._authorization_service.getAccessToken())
