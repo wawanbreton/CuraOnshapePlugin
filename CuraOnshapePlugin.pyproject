@@ -11,6 +11,11 @@
         "src/OnshapeApi.py",
         ".github/workflows/build_plugin.yml",
         ".github/workflows/make_secrets.py",
-        "src/OnshapeApiAuthScope.py"
+        "src/OnshapeApiAuthScope.py",
+        "src/data/OnshapeDocuments.py",
+        "src/data/OnshapeDocument.py",
+        "src/data/OnshapeFolder.py",
+        "src/data/OnshapeElement.py",
+        "src/data/__init__.py"
     ]
 }
