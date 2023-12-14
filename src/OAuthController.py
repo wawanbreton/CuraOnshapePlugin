@@ -56,7 +56,6 @@ class OAuthController(QObject):
         self._authorization_service.accessTokenChanged.connect(self._onAccessTokenChanged)
         self._authorization_service.loadAuthDataFromPreferences()
 
-    @pyqtSlot()
     def login(self):
         self._authorization_service.startAuthorizationFlow()
 
@@ -78,8 +77,5 @@ class OAuthController(QObject):
         if logged_in:
             QtApplication.getInstance().getMainWindow().requestActivate()
 
-        Logger.info(f'ONSHAPE PLUGIN Onshape account logged in {logged_in}')
-
     def _onAccessTokenChanged(self):
-        Logger.debug('ONSHAPE PLUGIN access token changed {}', self._authorization_service.getAccessToken())
         self.tokenChanged.emit(self._authorization_service.getAccessToken())

@@ -27,5 +27,18 @@ Window
     ConnectionItem
     {
         anchors.fill: parent
+        visible: controller.status === 'login'
+    }
+
+    LoadingItem
+    {
+        anchors.fill: parent
+        visible: controller.status === 'loading'
+    }
+
+    DocumentsTree
+    {
+        anchors.fill: parent
+        visible: controller.status === 'documents'
     }
 }

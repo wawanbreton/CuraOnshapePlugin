@@ -25,23 +25,6 @@ class OnshapeApi(QObject):
     @pyqtSlot(str)
     def setToken(self, token):
         self._auth_scope.setToken(token)
-        print('################################################## token set !')
-
-        def callback(answer):
-            def print_node(node, level):
-                if node.element is not None:
-                    level_str = "--" * level
-                    print(f'{level_str} {node.element.name}')
-                for child in node.children:
-                    print_node(child, level + 1)
-
-            print_node(answer.getTree(), 0)
-
-        def error_cb(request, error):
-            print('pas bien', request, error)
-
-        if token is not None:
-            self.listDocuments(callback, error_cb)
 
     def _getFolders(self, on_finished, on_error, documents):
         def response_received(reply):

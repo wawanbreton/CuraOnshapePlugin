@@ -37,7 +37,7 @@ Item
         {
             text: "Login to Onshape"
             Layout.alignment: Qt.AlignHCenter
-            onClicked: auth_controller.login()
+            onClicked: controller.login()
         }
     }
 }
