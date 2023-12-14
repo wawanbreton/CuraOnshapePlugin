@@ -28,7 +28,14 @@ class OnshapeApi(QObject):
         print('################################################## token set !')
 
         def callback(answer):
-            print('coucou', answer)
+            def print_node(node, level):
+                if node.element is not None:
+                    level_str = "--" * level
+                    print(f'{level_str} {node.element.name}')
+                for child in node.children:
+                    print_node(child, level + 1)
+
+            print_node(answer.getTree(), 0)
 
         def error_cb(request, error):
             print('pas bien', request, error)
@@ -46,7 +53,6 @@ class OnshapeApi(QObject):
 
         if next_folder is not None:
             url = f'{self.API_ROOT}/folders/{next_folder}'
-            print(url)
 
             self._http.get(url,
                            scope = self._scope,

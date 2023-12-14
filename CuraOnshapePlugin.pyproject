@@ -16,6 +16,7 @@
         "src/data/OnshapeDocument.py",
         "src/data/OnshapeFolder.py",
         "src/data/OnshapeElement.py",
-        "src/data/__init__.py"
+        "src/data/__init__.py",
+        "src/data/OnshapeDocumentsTreeNode.py"
     ]
 }

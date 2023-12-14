@@ -1,7 +1,8 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
 from .OnshapeDocument import OnshapeDocument
-from. OnshapeFolder import OnshapeFolder
+from .OnshapeFolder import OnshapeFolder
+from .OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
 
 
 class OnshapeDocuments:
@@ -32,3 +33,40 @@ class OnshapeDocuments:
             return folders.pop()
         else:
             return None
+
+    @staticmethod
+    def _findParent(node, parent_id):
+        if node.getId() == parent_id:
+            return node
+
+        for child in node.children:
+            parent = OnshapeDocuments._findParent(child, parent_id)
+            if parent is not None:
+                return parent
+
+        return None
+
+    def getTree(self):
+        root = OnshapeDocumentsTreeNode(None)
+
+        elements = self.folders + self.documents
+
+        # Keep adding elements until we can't do any more
+        added_element = True
+        while added_element:
+            added_element = False
+
+            index = 0
+            while index < len(elements):
+                element = elements[index]
+                parent = OnshapeDocuments._findParent(root, element.parent_id)
+
+                if parent is not None:
+                    parent.addChild(OnshapeDocumentsTreeNode(element))
+                    elements.pop(index)
+                    index -= 1
+                    added_element = True
+
+                index += 1
+
+        return root
