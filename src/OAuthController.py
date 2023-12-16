@@ -54,7 +54,6 @@ class OAuthController(QObject):
         self._authorization_service.onAuthStateChanged.connect(self._onLoginStateChanged)
         self._authorization_service.onAuthenticationError.connect(self._onLoginStateChanged)
         self._authorization_service.accessTokenChanged.connect(self._onAccessTokenChanged)
-        self._authorization_service.loadAuthDataFromPreferences()
 
     def login(self):
         self._authorization_service.startAuthorizationFlow()

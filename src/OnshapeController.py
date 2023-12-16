@@ -1,6 +1,9 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot, pyqtProperty
+from PyQt6.QtCore import Qt, pyqtSignal, QObject, pyqtSlot, pyqtProperty, QAbstractItemModel
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
+
+from .data.OnshapeDocumentsModel import OnshapeDocumentsModel
 
 
 class OnshapeController(QObject):
@@ -11,12 +14,19 @@ class OnshapeController(QObject):
         self._auth_controller = auth_controller
         self._api = api
         self._status = 'login'
+        self._documents_model = QStandardItemModel()
 
     statusChanged = pyqtSignal()
 
     @pyqtProperty(str, notify = statusChanged)
     def status(self):
         return self._status
+
+    modelChanged = pyqtSignal()
+
+    @pyqtProperty(QAbstractItemModel, notify = modelChanged)
+    def documentsModel(self):
+        return self._documents_model
 
     def _setStatus(self, status):
         self._status = status
@@ -28,15 +38,9 @@ class OnshapeController(QObject):
 
     def loadDocuments(self):
         def on_finished(answer):
-            def print_node(node, level):
-                if node.element is not None:
-                    level_str = "--" * level
-                    print(f'{level_str} {node.element.name}')
-                for child in node.children:
-                    print_node(child, level + 1)
-
-            print_node(answer.getTree(), 0)
+            self._documents_model = OnshapeDocumentsModel(answer.getTree())
             self._setStatus('documents')
+            self.modelChanged.emit()
 
         def on_error(request, error):
             print('pas bien', request, error)

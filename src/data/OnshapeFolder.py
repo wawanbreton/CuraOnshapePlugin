@@ -1,7 +1,5 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-import re
-
 from .OnshapeElement import OnshapeElement
 
 
