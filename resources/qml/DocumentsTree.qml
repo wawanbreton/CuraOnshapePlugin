@@ -19,7 +19,7 @@ Rectangle
         anchors.fill: parent
         anchors.margins: UM.Theme.getSize("default_margin").width
         spacing: UM.Theme.getSize("default_margin").height
-        model: controller.documentsModel
+        model: controller.documentsModel.elements
 
         ScrollBar.vertical: UM.ScrollBar { id: verticalScrollBar }
 
@@ -58,7 +58,7 @@ Rectangle
 
                     Rectangle
                     {
-                        color: model.hasThumbnail ? "white" : "transparent"
+                        color: modelData.hasThumbnail ? "white" : "transparent"
                         Layout.preferredWidth: UM.Theme.getSize("card_icon").width
                         Layout.preferredHeight: UM.Theme.getSize("card_icon").height
 
@@ -67,7 +67,7 @@ Rectangle
                             anchors.centerIn: parent
                             width: Math.min(implicitWidth, parent.width)
                             height: Math.min(implicitHeight, parent.height)
-                            source: model.icon
+                            source: modelData.icon
                             fillMode: Image.PreserveAspectFit
                             mipmap: true
                         }
@@ -85,7 +85,7 @@ Rectangle
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignLeft
 
-                            text: model.name
+                            text: modelData.name
                             font: UM.Theme.getFont("medium_bold")
                         }
 
@@ -94,7 +94,7 @@ Rectangle
                             Layout.fillWidth: true
                             Layout.alignment: Qt.AlignLeft
 
-                            text: "%1\nLast updated: %2 by %3".arg(model.owner).arg(model.lastModifiedDate).arg(model.lastModifiedBy)
+                            text: "%1\nLast updated: %2 by %3".arg(modelData.owner).arg(modelData.lastModifiedDate).arg(modelData.lastModifiedBy)
                             font: UM.Theme.getFont("default")
                         }
                     }

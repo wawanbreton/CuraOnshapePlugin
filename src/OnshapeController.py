@@ -1,9 +1,8 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from PyQt6.QtCore import Qt, pyqtSignal, QObject, pyqtSlot, pyqtProperty, QAbstractItemModel
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
+from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot, pyqtProperty, QAbstractItemModel
 
-from .data.OnshapeDocumentsModel import OnshapeDocumentsModel
+from .model.OnshapeDocumentsModel import OnshapeDocumentsModel
 
 
 class OnshapeController(QObject):
@@ -14,7 +13,7 @@ class OnshapeController(QObject):
         self._auth_controller = auth_controller
         self._api = api
         self._status = 'login'
-        self._documents_model = QStandardItemModel()
+        self._documents_model = None
 
     statusChanged = pyqtSignal()
 
