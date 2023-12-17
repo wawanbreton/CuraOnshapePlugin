@@ -19,8 +19,11 @@
         "src/data/__init__.py",
         "src/data/OnshapeDocumentsTreeNode.py",
         "resources/qml/LoadingItem.qml",
-        "resources/qml/DocumentsTree.qml",
+        "resources/qml/DocumentsView.qml",
         "src/model/OnshapeDocumentsModel.py",
-        "src/model/OnshapeDocumentsItem.py"
+        "src/model/OnshapeDocumentsItem.py",
+        "src/data/OnshapeRoot.py",
+        "src/data/OnshapeBaseModel.py",
+        "src/model/__init__.py"
     ]
 }

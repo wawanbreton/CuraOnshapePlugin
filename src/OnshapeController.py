@@ -3,6 +3,8 @@
 from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot, pyqtProperty, QAbstractItemModel
 
 from .model.OnshapeDocumentsModel import OnshapeDocumentsModel
+from .data.OnshapeRoot import OnshapeRoot
+from .data.OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
 
 
 class OnshapeController(QObject):
@@ -13,7 +15,7 @@ class OnshapeController(QObject):
         self._auth_controller = auth_controller
         self._api = api
         self._status = 'login'
-        self._documents_model = None
+        self._documents_model = OnshapeDocumentsModel(OnshapeDocumentsTreeNode(OnshapeRoot()))
 
     statusChanged = pyqtSignal()
 
@@ -37,12 +39,11 @@ class OnshapeController(QObject):
 
     def loadDocuments(self):
         def on_finished(answer):
-            self._documents_model = OnshapeDocumentsModel(answer.getTree())
-            self._setStatus('documents')
+            self._documents_model.setNodeChildren(answer.getTree().children)
             self.modelChanged.emit()
 
         def on_error(request, error):
             print('pas bien', request, error)
 
-        self._setStatus('loading')
+        self._setStatus('documents')
         self._api.listDocuments(on_finished, on_error)

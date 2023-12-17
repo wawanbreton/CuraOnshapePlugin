@@ -2,12 +2,14 @@
 
 from datetime import datetime
 
+from .OnshapeBaseModel import OnshapeBaseModel
 
-class OnshapeElement:
+
+class OnshapeElement(OnshapeBaseModel):
 
     def __init__(self, data):
-        self.id = data['id']
-        self.name = data['name']
+        super().__init__(data['name'], data['id'])
+
         self.owner = data['owner']['name']
         self.last_modified_date = datetime.fromisoformat(data['modifiedAt'])
         self.last_modified_by = data['modifiedBy']['name']

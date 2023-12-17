@@ -15,7 +15,7 @@ Item
     Label
     {
         anchors.fill: parent
-        text: "Loading documents..."
+        text: "Loading ..."
         color: UM.Theme.getColor("text_default")
         font: UM.Theme.getFont("large_bold")
         horizontalAlignment: Text.AlignHCenter

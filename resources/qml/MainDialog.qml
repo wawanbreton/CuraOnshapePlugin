@@ -11,6 +11,8 @@ Window
     id: root
     title: "Open file from Onshape"
 
+    property var selectedElementModel
+
     modality: Qt.ApplicationModal
     width: 1024 * screenScaleFactor
     height: 768 * screenScaleFactor
@@ -30,15 +32,32 @@ Window
         visible: controller.status === 'login'
     }
 
-    LoadingItem
+    StackView
     {
-        anchors.fill: parent
-        visible: controller.status === 'loading'
-    }
-
-    DocumentsTree
-    {
+        id: documentsTreeStack
         anchors.fill: parent
         visible: controller.status === 'documents'
+
+        initialItem: DocumentsView
+        {
+            documentsModel: controller.documentsModel
+            onElementSelected: { Console.print('bien reçu') } // pushDocuments(subModel)
+        }
+    }
+
+    Component
+    {
+        id: subDocumentsViewComponent
+
+        DocumentsView
+        {
+            documentsModel: root.selectedElementModel
+        }
+    }
+
+    function pushDocuments(model)
+    {
+        root.selectedElementModel = model
+        documentsTreeStack.push(subDocumentsViewComponent);
     }
 }

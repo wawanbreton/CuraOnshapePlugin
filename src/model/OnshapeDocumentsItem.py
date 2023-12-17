@@ -3,24 +3,24 @@
 from UM.Qt.QtApplication import QtApplication
 
 from PyQt6.QtCore import pyqtProperty, QObject
-from PyQt6.QtQml import QQmlEngine
 
 from ..data.OnshapeDocument import OnshapeDocument
+from .OnshapeDocumentsModel import OnshapeDocumentsModel
 
 
 class OnshapeDocumentsItem(QObject):
 
     def __init__(self, node):
         super().__init__(parent = None)
-        QQmlEngine.setObjectOwnership(self, QQmlEngine.ObjectOwnership.CppOwnership)
         self._node = node
         self._element = self._node.element
+        self._subModel = OnshapeDocumentsModel(self._node)
 
     @pyqtProperty(str, constant = True)
     def name(self):
         return self._element.name
 
-    @pyqtProperty(str, constant=True)
+    @pyqtProperty(str, constant = True)
     def icon(self):
         if isinstance(self._element, OnshapeDocument):
             return self._element.thumbnail_url
@@ -42,3 +42,7 @@ class OnshapeDocumentsItem(QObject):
     @pyqtProperty(str, constant = True)
     def lastModifiedBy(self):
         return self._element.last_modified_by
+
+    @pyqtProperty(OnshapeDocumentsModel, constant = True)
+    def childModel(self):
+        return self._subModel

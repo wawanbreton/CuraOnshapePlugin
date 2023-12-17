@@ -2,6 +2,7 @@
 
 from .OnshapeDocument import OnshapeDocument
 from .OnshapeFolder import OnshapeFolder
+from .OnshapeRoot import OnshapeRoot
 from .OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
 
 
@@ -47,7 +48,7 @@ class OnshapeDocuments:
         return None
 
     def getTree(self):
-        root = OnshapeDocumentsTreeNode(None)
+        root = OnshapeDocumentsTreeNode(OnshapeRoot())
 
         elements = self.folders + self.documents
 
