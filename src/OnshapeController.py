@@ -14,37 +14,24 @@ class OnshapeController(QObject):
 
         self._auth_controller = auth_controller
         self._api = api
-        self._status = 'login'
+        self._logged_in = False
         self._documents_model = OnshapeDocumentsModel(OnshapeDocumentsTreeNode(OnshapeRoot()),
                                                       self._api)
 
-    statusChanged = pyqtSignal()
+    loggedInChanged = pyqtSignal()
 
-    @pyqtProperty(str, notify = statusChanged)
-    def status(self):
-        return self._status
+    def setLoggedIn(self, logged_in):
+        self._logged_in = logged_in
+        self.loggedInChanged.emit()
 
-    modelChanged = pyqtSignal()
+    @pyqtProperty(bool, notify = loggedInChanged, fset = setLoggedIn)
+    def loggedIn(self):
+        return self._logged_in
 
-    @pyqtProperty(QAbstractItemModel, notify = modelChanged)
+    @pyqtProperty(QAbstractItemModel, constant = True)
     def documentsModel(self):
         return self._documents_model
-
-    def _setStatus(self, status):
-        self._status = status
-        self.statusChanged.emit()
 
     @pyqtSlot()
     def login(self):
         self._auth_controller.login()
-
-    def loadDocuments(self):
-        def on_finished(answer):
-            self._documents_model.setNodeChildren(answer.getTree().children)
-            self.modelChanged.emit()
-
-        def on_error(request, error):
-            print('pas bien', request, error)
-
-        self._setStatus('documents')
-        self._api.listDocuments(on_finished, on_error)

@@ -48,7 +48,7 @@ class OnshapeDocumentsItem(QObject):
                                                 self._onThumbnailError)
                 return None
         else:
-            return QtApplication.getInstance().getTheme().getIcon('Folder', 'medium').toString()
+            return self._element.getIcon()
 
     @pyqtProperty(bool, constant = True)
     def hasThumbnail(self):
@@ -56,7 +56,10 @@ class OnshapeDocumentsItem(QObject):
 
     @pyqtProperty(str, constant = True)
     def owner(self):
-        return self._element.owner
+        if hasattr(self._element, 'owner'):
+            return self._element.owner
+        else:
+            return ''
 
     @pyqtProperty(str, constant = True)
     def lastModifiedDate(self):

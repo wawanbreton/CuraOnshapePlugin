@@ -177,4 +177,9 @@ Rectangle
             }
         }
     }
+
+    Component.onCompleted: loadDocumentsIfVisible()
+    onVisibleChanged: loadDocumentsIfVisible()
+
+    function loadDocumentsIfVisible() { if(visible) { documentsModel.load() } }
 }

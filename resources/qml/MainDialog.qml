@@ -29,19 +29,18 @@ Window
     ConnectionItem
     {
         anchors.fill: parent
-        visible: controller.status === 'login'
+        visible: !controller.loggedIn
     }
 
     StackView
     {
         id: documentsTreeStack
         anchors.fill: parent
-        visible: controller.status === 'documents'
+        visible: controller.loggedIn
 
         initialItem: DocumentsView
         {
             documentsModel: controller.documentsModel
-            onElementSelected: { Console.print('bien reçu') } // pushDocuments(subModel)
         }
     }
 
@@ -53,11 +52,5 @@ Window
         {
             documentsModel: root.selectedElementModel
         }
-    }
-
-    function pushDocuments(model)
-    {
-        root.selectedElementModel = model
-        documentsTreeStack.push(subDocumentsViewComponent);
     }
 }

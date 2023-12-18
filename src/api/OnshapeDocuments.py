@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from .OnshapeDocument import OnshapeDocument
-from .OnshapeFolder import OnshapeFolder
-from .OnshapeRoot import OnshapeRoot
-from .OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
+from ..data.OnshapeDocument import OnshapeDocument
+from ..data.OnshapeFolder import OnshapeFolder
+from ..data.OnshapeRoot import OnshapeRoot
+from ..data.OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
 
 
 class OnshapeDocuments:

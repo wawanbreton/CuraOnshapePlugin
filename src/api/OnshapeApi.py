@@ -8,8 +8,10 @@ from UM.TaskManagement.HttpRequestManager import HttpRequestManager
 from UM.TaskManagement.HttpRequestScope import JsonDecoratorScope
 
 from .OnshapeApiAuthScope import OnshapeApiAuthScope
-from .data.OnshapeDocuments import OnshapeDocuments
+from .OnshapeDocuments import OnshapeDocuments
 from .AcceptBinaryDataScope import AcceptBinaryDataScope
+from ..data.OnshapeWorkspace import OnshapeWorkspace
+from ..data.OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
 
 
 class OnshapeApi(QObject):
@@ -45,7 +47,7 @@ class OnshapeApi(QObject):
                            error_callback = on_error,
                            timeout = self.DEFAULT_REQUEST_TIMEOUT)
         else:
-            on_finished(documents)
+            on_finished(documents.getTree().children)
 
     def _listDocuments(self, on_finished, on_error, documents, offset):
         url = QUrl(f'{self.API_ROOT}/documents')
@@ -76,11 +78,28 @@ class OnshapeApi(QObject):
         documents = OnshapeDocuments()
         self._listDocuments(on_finished, on_error, documents, 0)
 
+    def listWorkspaces(self, document_id, on_finished, on_error):
+        def response_received(reply):
+            data_json = json.loads(bytes(reply.readAll()).decode())
+            workspaces = []
+
+            for workspace_data in data_json:
+                workspaces.append(OnshapeDocumentsTreeNode(OnshapeWorkspace(workspace_data)))
+
+            on_finished(workspaces)
+
+        url = f'{self.API_ROOT}/documents/d/{document_id}/workspaces'
+
+        self._http.get(url,
+                       scope = self._json_scope,
+                       callback = response_received,
+                       error_callback = on_error,
+                       timeout = self.DEFAULT_REQUEST_TIMEOUT)
+
     def loadThumbnail(self, thumbnail_url, on_finished, on_error):
         def response_received(reply):
             on_finished(reply.readAll())
 
-        print(thumbnail_url)
         self._http.get(thumbnail_url,
                        scope = self._binary_scope,
                        callback = response_received,

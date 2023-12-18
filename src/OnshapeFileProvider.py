@@ -8,7 +8,7 @@ from UM.FileProvider import FileProvider
 
 from .OnshapeController import OnshapeController
 from .OAuthController import OAuthController
-from .OnshapeApi import OnshapeApi
+from .api.OnshapeApi import OnshapeApi
 
 
 class OnshapeFileProvider(FileProvider):
@@ -35,4 +35,4 @@ class OnshapeFileProvider(FileProvider):
     @pyqtSlot(str)
     def _onTokenChanged(self, token):
         if token is not None:
-            self._controller.loadDocuments()
+            self._controller.loggedIn = True

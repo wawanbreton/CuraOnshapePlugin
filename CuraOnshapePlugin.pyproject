@@ -8,14 +8,15 @@
         "resources/qml/ConnectionItem.qml",
         "plugin.json",
         "src/OAuthController.py",
-        "src/OnshapeApi.py",
+        "src/api/OnshapeApi.py",
         ".github/workflows/build_plugin.yml",
         ".github/workflows/make_secrets.py",
-        "src/OnshapeApiAuthScope.py",
-        "src/data/OnshapeDocuments.py",
+        "src/api/OnshapeApiAuthScope.py",
+        "src/api/OnshapeDocuments.py",
         "src/data/OnshapeDocument.py",
         "src/data/OnshapeFolder.py",
         "src/data/OnshapeElement.py",
+        "src/data/OnshapeWorkspace.py",
         "src/data/__init__.py",
         "src/data/OnshapeDocumentsTreeNode.py",
         "resources/qml/LoadingItem.qml",
@@ -25,6 +26,8 @@
         "src/data/OnshapeRoot.py",
         "src/data/OnshapeBaseModel.py",
         "src/model/__init__.py",
-        "src/AcceptBinaryDataScope.py"
+        "src/api/AcceptBinaryDataScope.py",
+        "resources/images/onshape-logo-full.svg",
+        "resources/images/Workspace.svg"
     ]
 }

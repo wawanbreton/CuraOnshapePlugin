@@ -33,3 +33,6 @@ class OnshapeDocument(OnshapeElement):
             return thumbnail_sizes[0]['href']
         else:
             return None
+
+    def loadChildren(self, api, on_finished, on_error):
+        api.listWorkspaces(self.id, on_finished, on_error)

@@ -8,12 +8,12 @@ class OnshapeDocumentsTreeNode:
         self.children = []
         self.children_loaded = False
 
-    def addChild(self, element):
-        self.children.append(element)
+    def addChild(self, node):
+        self.children.append(node)
         self.children_loaded = True
 
-    def setChildren(self, elements):
-        self.children = elements
+    def setChildren(self, nodes):
+        self.children = nodes
         self.children_loaded = True
 
     def getId(self):

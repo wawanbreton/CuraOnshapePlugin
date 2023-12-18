@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, QObject
+from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
 
 from ..data.OnshapeRoot import OnshapeRoot
 
@@ -26,10 +26,6 @@ class OnshapeDocumentsModel(QObject):
     def elements(self):
         return self._items
 
-    def setNodeChildren(self, children):
-        self._node.setChildren(children)
-        self._updateItems()
-
     def _updateItems(self):
         from .OnshapeDocumentsItem import OnshapeDocumentsItem
         self._items = [OnshapeDocumentsItem(child, self._api) for child in self._node.children]
@@ -42,3 +38,15 @@ class OnshapeDocumentsModel(QObject):
     @pyqtProperty(bool, constant = True)
     def isRoot(self):
         return isinstance(self._node.element, OnshapeRoot)
+
+    @pyqtSlot()
+    def load(self):
+        def on_finished(children):
+            self._node.setChildren(children)
+            self._updateItems()
+
+        def on_error(request, error):
+            print('pas bien', request, error)
+
+        if not self.loaded:
+            self._node.element.loadChildren(self._api, on_finished, on_error)
