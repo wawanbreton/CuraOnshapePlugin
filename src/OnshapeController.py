@@ -15,7 +15,8 @@ class OnshapeController(QObject):
         self._auth_controller = auth_controller
         self._api = api
         self._status = 'login'
-        self._documents_model = OnshapeDocumentsModel(OnshapeDocumentsTreeNode(OnshapeRoot()))
+        self._documents_model = OnshapeDocumentsModel(OnshapeDocumentsTreeNode(OnshapeRoot()),
+                                                      self._api)
 
     statusChanged = pyqtSignal()
 

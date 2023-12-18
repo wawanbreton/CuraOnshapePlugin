@@ -9,6 +9,7 @@ from UM.TaskManagement.HttpRequestScope import JsonDecoratorScope
 
 from .OnshapeApiAuthScope import OnshapeApiAuthScope
 from .data.OnshapeDocuments import OnshapeDocuments
+from .AcceptBinaryDataScope import AcceptBinaryDataScope
 
 
 class OnshapeApi(QObject):
@@ -20,7 +21,8 @@ class OnshapeApi(QObject):
         super().__init__(parent = None)
         self._http = HttpRequestManager.getInstance()
         self._auth_scope = OnshapeApiAuthScope()
-        self._scope = JsonDecoratorScope(self._auth_scope)
+        self._json_scope = JsonDecoratorScope(self._auth_scope)
+        self._binary_scope = AcceptBinaryDataScope(self._auth_scope)
 
     @pyqtSlot(str)
     def setToken(self, token):
@@ -38,7 +40,7 @@ class OnshapeApi(QObject):
             url = f'{self.API_ROOT}/folders/{next_folder}'
 
             self._http.get(url,
-                           scope = self._scope,
+                           scope = self._json_scope,
                            callback = response_received,
                            error_callback = on_error,
                            timeout = self.DEFAULT_REQUEST_TIMEOUT)
@@ -65,7 +67,7 @@ class OnshapeApi(QObject):
                 self._getFolders(on_finished, on_error, documents)
 
         self._http.get(url.toString(),
-                       scope = self._scope,
+                       scope = self._json_scope,
                        callback = response_received,
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
@@ -73,3 +75,14 @@ class OnshapeApi(QObject):
     def listDocuments(self, on_finished, on_error):
         documents = OnshapeDocuments()
         self._listDocuments(on_finished, on_error, documents, 0)
+
+    def loadThumbnail(self, thumbnail_url, on_finished, on_error):
+        def response_received(reply):
+            on_finished(reply.readAll())
+
+        print(thumbnail_url)
+        self._http.get(thumbnail_url,
+                       scope = self._binary_scope,
+                       callback = response_received,
+                       error_callback = on_error,
+                       timeout = self.DEFAULT_REQUEST_TIMEOUT)

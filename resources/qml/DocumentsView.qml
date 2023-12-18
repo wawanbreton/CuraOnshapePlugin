@@ -17,6 +17,7 @@ Rectangle
 
     property Onshape.DocumentsModel documentsModel
     signal elementSelected(Onshape.DocumentsModel subModel)
+    readonly property real iconSizeFactor: 1.2
 
     RowLayout
     {
@@ -103,20 +104,11 @@ Rectangle
 
                     return width
                 }
-                implicitHeight: UM.Theme.getSize("card_icon").height + 2 * UM.Theme.getSize("default_margin").height
+                implicitHeight: UM.Theme.getSize("card_icon").height * iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height
                 hoverEnabled: true
 
-                onClicked:
-                {
-                    //"/qml/config/RobotConfig.qml",
-                    //root.parent.push(DocumentsView,
-                                     //{"documentsModel": modelData.childModel}*/)
-                    // root.clickedElementModel = modelData.childModel
-                    // root.parent.push(subDocumentsViewComponent);
-                    //root.elementSelected(modelData.childModel)
-                    root.parent.push("DocumentsView.qml",
-                                     {"documentsModel": modelData.childModel})
-                }
+                onClicked: root.parent.push("DocumentsView.qml",
+                                            {"documentsModel": modelData.childModel})
 
                 Rectangle
                 {
@@ -132,17 +124,26 @@ Rectangle
                         Rectangle
                         {
                             color: modelData.hasThumbnail ? "white" : "transparent"
-                            Layout.preferredWidth: UM.Theme.getSize("card_icon").width
-                            Layout.preferredHeight: UM.Theme.getSize("card_icon").height
+                            Layout.preferredWidth: UM.Theme.getSize("card_icon").width * iconSizeFactor
+                            Layout.preferredHeight: UM.Theme.getSize("card_icon").height * iconSizeFactor
 
                             Image
                             {
+                                visible: modelData.hasThumbnail
                                 anchors.centerIn: parent
                                 width: Math.min(implicitWidth, parent.width)
                                 height: Math.min(implicitHeight, parent.height)
                                 source: modelData.icon
                                 fillMode: Image.PreserveAspectFit
                                 mipmap: true
+                            }
+
+                            UM.ColorImage
+                            {
+                                visible: !modelData.hasThumbnail
+                                anchors.fill: parent
+                                source: modelData.icon
+                                color: UM.Theme.getColor("icon")
                             }
                         }
 

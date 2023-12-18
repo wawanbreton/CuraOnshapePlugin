@@ -24,6 +24,7 @@
         "src/model/OnshapeDocumentsItem.py",
         "src/data/OnshapeRoot.py",
         "src/data/OnshapeBaseModel.py",
-        "src/model/__init__.py"
+        "src/model/__init__.py",
+        "src/AcceptBinaryDataScope.py"
     ]
 }
