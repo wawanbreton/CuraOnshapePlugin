@@ -7,18 +7,19 @@ from ..data.OnshapeRoot import OnshapeRoot
 
 class OnshapeDocumentsModel(QObject):
 
-    def __init__(self, node, api):
+    def __init__(self, node, api, path):
         super().__init__(parent = None)
         self._node = node
         self._api = api
         self._items = []
+        self._path = path + [self._node.element.name]
 
         if self.loaded:
             self._updateItems()
 
-    @pyqtProperty(str, constant = True)
-    def name(self):
-        return self._node.element.name
+    @pyqtProperty(list, constant = True)
+    def path(self):
+        return self._path
 
     elementsChanged = pyqtSignal()
 
@@ -28,7 +29,7 @@ class OnshapeDocumentsModel(QObject):
 
     def _updateItems(self):
         from .OnshapeDocumentsItem import OnshapeDocumentsItem
-        self._items = [OnshapeDocumentsItem(child, self._api) for child in self._node.children]
+        self._items = [OnshapeDocumentsItem(child, self._api, self._path) for child in self._node.children]
         self.elementsChanged.emit()
 
     @pyqtProperty(bool, notify = elementsChanged)

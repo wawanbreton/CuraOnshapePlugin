@@ -24,7 +24,8 @@ class OnshapeController(QObject):
         self._api = api
         self._logged_in = False
         self._documents_model = OnshapeDocumentsModel(OnshapeDocumentsTreeNode(OnshapeRoot()),
-                                                      self._api)
+                                                      self._api,
+                                                      [])
 
     loggedInChanged = pyqtSignal()
 

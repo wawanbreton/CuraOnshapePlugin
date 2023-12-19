@@ -3,6 +3,7 @@
 import QtQuick 2.10
 import QtQuick.Window 2.2
 import QtQuick.Controls 2.3
+import QtQuick.Layouts 1.15
 
 import UM 1.2 as UM
 
@@ -32,15 +33,34 @@ Window
         visible: !controller.loggedIn
     }
 
-    StackView
+    Rectangle
     {
-        id: documentsListStack
+        color: UM.Theme.getColor("main_background")
         anchors.fill: parent
         visible: controller.loggedIn
 
-        initialItem: DocumentsView
+        ColumnLayout
         {
-            documentsModel: controller.documentsModel
+            anchors.fill: parent
+            spacing: 0
+
+            DocumentsPath
+            {
+                Layout.fillWidth: true
+                documentsModel: documentsListStack.currentItem.documentsModel
+            }
+
+            StackView
+            {
+                id: documentsListStack
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+
+                initialItem: DocumentsView
+                {
+                    documentsModel: controller.documentsModel
+                }
+            }
         }
     }
 

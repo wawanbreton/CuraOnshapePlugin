@@ -18,11 +18,10 @@ MouseArea
     {
         var width = listView.width
         var default_margin = UM.Theme.getSize("default_margin").width
-        width -= default_margin
 
         if (verticalScrollBar.visible)
         {
-            width -= default_margin
+            width -= 2 * default_margin
         }
 
         return width

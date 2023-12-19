@@ -10,36 +10,17 @@ import UM 1.5 as UM
 import Onshape 1.0 as Onshape
 
 
-Rectangle
+Item
 {
     id: root
-    color: UM.Theme.getColor("main_background")
 
     property Onshape.DocumentsModel documentsModel
     signal elementSelected(Onshape.DocumentsModel subModel)
     readonly property real iconSizeFactor: 1.2
 
-    DocumentsPath
-    {
-        id: header
-        anchors
-        {
-            top: parent.top
-            topMargin: UM.Theme.getSize("default_margin").height
-            left: parent.left
-            leftMargin: UM.Theme.getSize("default_margin").width
-            right: parent.right
-            rightMargin: anchors.leftMargin
-        }
-    }
-
     Rectangle
     {
-        anchors.top: header.bottom
-        anchors.topMargin: UM.Theme.getSize("default_margin").width
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
+        anchors.fill: parent
         color: UM.Theme.getColor("detail_background")
         clip: true
 

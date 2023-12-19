@@ -7,34 +7,48 @@ import QtQuick.Layouts 1.15
 
 import Cura 1.5 as Cura
 import UM 1.5 as UM
+import Onshape 1.0 as Onshape
 
 
-RowLayout
+Item
 {
+    property Onshape.DocumentsModel documentsModel
+
     id: root
-    spacing: UM.Theme.getSize("default_margin").width
+    implicitHeight: row.implicitHeight + 2 * UM.Theme.getSize("default_margin").width
 
-    Cura.SecondaryButton
+    RowLayout
     {
-        Layout.alignment: Qt.AlignVCenter
-        Layout.preferredHeight: UM.Theme.getSize("action_button").height
-        Layout.preferredWidth: height
+        id: row
 
-        enabled: !documentsModel.isRoot
-        onClicked: documentsListStack.pop()
+        anchors.fill: parent
+        anchors.margins: UM.Theme.getSize("default_margin").width
+        spacing: UM.Theme.getSize("default_margin").width
 
-        leftPadding: UM.Theme.getSize("narrow_margin").width
-        rightPadding: leftPadding
-        iconSource: UM.Theme.getIcon("ArrowLeft")
-        iconSize: height - leftPadding * 2
-    }
+        Cura.SecondaryButton
+        {
+            id: button
 
-    UM.Label
-    {
-        Layout.alignment: Qt.AlignVCenter
-        Layout.fillWidth: true
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredHeight: UM.Theme.getSize("action_button").height
+            Layout.preferredWidth: height
 
-        text: documentsModel.name
-        font: UM.Theme.getFont("large")
+            enabled: !documentsModel.isRoot
+            onClicked: documentsListStack.pop()
+
+            leftPadding: UM.Theme.getSize("narrow_margin").width
+            rightPadding: leftPadding
+            iconSource: UM.Theme.getIcon("ArrowLeft")
+            iconSize: height - leftPadding * 2
+        }
+
+        UM.Label
+        {
+            Layout.alignment: Qt.AlignVCenter
+            Layout.fillWidth: true
+
+            text: documentsModel.path.join(" > ")
+            font: UM.Theme.getFont("large")
+        }
     }
 }

@@ -11,12 +11,12 @@ from .OnshapeDocumentsModel import OnshapeDocumentsModel
 
 class OnshapeDocumentsItem(QObject):
 
-    def __init__(self, node, api):
+    def __init__(self, node, api, path):
         super().__init__(parent = None)
         self._node = node
         self._api = api
         self._element = self._node.element
-        self._subModel = OnshapeDocumentsModel(self._node, self._api)
+        self._subModel = OnshapeDocumentsModel(self._node, self._api, path)
         self._thumbnail_str_data = None
         self._thumbnail_downloaded = False
 
