@@ -105,8 +105,9 @@ Rectangle
                     return width
                 }
                 implicitHeight: UM.Theme.getSize("card_icon").height * iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height
-                hoverEnabled: true
 
+                hoverEnabled: true
+                enabled: modelData.hasChildren
                 onClicked: root.parent.push("DocumentsView.qml",
                                             {"documentsModel": modelData.childModel})
 
@@ -168,8 +169,26 @@ Rectangle
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignLeft
 
-                                text: "%1\nLast updated: %2 by %3".arg(modelData.owner).arg(modelData.lastModifiedDate).arg(modelData.lastModifiedBy)
                                 font: UM.Theme.getFont("default")
+                                text:
+                                {
+                                    var texts = []
+                                    if(modelData.shortDesc)
+                                    {
+                                        texts.push(modelData.shortDesc)
+                                    }
+                                    if(modelData.lastModifiedDate)
+                                    {
+                                        var text_updated = "Last updated: %1".arg(modelData.lastModifiedDate)
+                                        if(modelData.lastModifiedBy)
+                                        {
+                                            text_updated += " by %1".arg(modelData.lastModifiedBy)
+                                        }
+                                        texts.push(text_updated)
+                                    }
+
+                                    return texts.join("\n")
+                                }
                             }
                         }
                     }

@@ -7,10 +7,13 @@ from .OnshapeBaseModel import OnshapeBaseModel
 
 class OnshapeElement(OnshapeBaseModel):
 
-    def __init__(self, data):
-        super().__init__(data['name'], data['id'])
+    def __init__(self, data, thumbnail_url = None, icon = None):
+        super().__init__(data['name'],
+                         data['id'],
+                         data['owner']['name'],
+                         datetime.fromisoformat(data['modifiedAt']),
+                         data['modifiedBy']['name'],
+                         thumbnail_url = thumbnail_url,
+                         icon = icon)
 
-        self.owner = data['owner']['name']
-        self.last_modified_date = datetime.fromisoformat(data['modifiedAt'])
-        self.last_modified_by = data['modifiedBy']['name']
         self.parent_id = data['parentId']

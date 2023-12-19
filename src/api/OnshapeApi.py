@@ -11,6 +11,8 @@ from .OnshapeApiAuthScope import OnshapeApiAuthScope
 from .OnshapeDocuments import OnshapeDocuments
 from .AcceptBinaryDataScope import AcceptBinaryDataScope
 from ..data.OnshapeWorkspace import OnshapeWorkspace
+from ..data.OnshapeTab import OnshapeTab
+from ..data.OnshapePart import OnshapePart
 from ..data.OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
 
 
@@ -89,6 +91,52 @@ class OnshapeApi(QObject):
             on_finished(workspaces)
 
         url = f'{self.API_ROOT}/documents/d/{document_id}/workspaces'
+
+        self._http.get(url,
+                       scope = self._json_scope,
+                       callback = response_received,
+                       error_callback = on_error,
+                       timeout = self.DEFAULT_REQUEST_TIMEOUT)
+
+    def listTabs(self, document_id, workspace_id, on_finished, on_error):
+        def response_received(reply):
+            tabs = []
+            data_json = json.loads(bytes(reply.readAll()).decode())
+
+            for tab_data in data_json:
+                tabs.append(OnshapeDocumentsTreeNode(OnshapeTab(tab_data, document_id, workspace_id)))
+
+            on_finished(tabs)
+
+        url = QUrl(f'{self.API_ROOT}/documents/d/{document_id}/w/{workspace_id}/elements')
+
+        query = QUrlQuery()
+        query.addQueryItem('withThumbnails', 'true')
+        query.addQueryItem('elementType', 'PARTSTUDIO') # We can only get parts from PartStudios
+        url.setQuery(query)
+
+        self._http.get(url,
+                       scope = self._json_scope,
+                       callback = response_received,
+                       error_callback = on_error,
+                       timeout = self.DEFAULT_REQUEST_TIMEOUT)
+
+    def listParts(self, document_id, workspace_id, tab_id, on_finished, on_error):
+        def response_received(reply):
+            parts = []
+            data_json = json.loads(bytes(reply.readAll()).decode())
+
+            for part_data in data_json:
+                parts.append(OnshapeDocumentsTreeNode(OnshapePart(part_data, document_id, workspace_id, tab_id)))
+
+            on_finished(parts)
+
+        url = QUrl(f'{self.API_ROOT}/parts/d/{document_id}/w/{workspace_id}/e/{tab_id}')
+
+        query = QUrlQuery()
+        query.addQueryItem('withThumbnails', 'true')
+        query.addQueryItem('includeFlatParts', 'false')
+        url.setQuery(query)
 
         self._http.get(url,
                        scope = self._json_scope,

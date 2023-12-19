@@ -36,7 +36,7 @@ class OnshapeDocumentsItem(QObject):
 
     @pyqtProperty(str, notify = iconChanged)
     def icon(self):
-        if isinstance(self._element, OnshapeDocument):
+        if self._element.hasThumbnail():
             if self._thumbnail_str_data is not None:
                 return self._thumbnail_str_data
             else:
@@ -48,26 +48,33 @@ class OnshapeDocumentsItem(QObject):
                                                 self._onThumbnailError)
                 return None
         else:
-            return self._element.getIcon()
+            return self._element.icon
 
     @pyqtProperty(bool, constant = True)
     def hasThumbnail(self):
-        return isinstance(self._element, OnshapeDocument)
+        return self._element.hasThumbnail()
+
+    @pyqtProperty(bool, constant = True)
+    def hasChildren(self):
+        return self._element.has_children
 
     @pyqtProperty(str, constant = True)
-    def owner(self):
-        if hasattr(self._element, 'owner'):
-            return self._element.owner
-        else:
-            return ''
+    def shortDesc(self):
+        return self._element.short_desc
 
     @pyqtProperty(str, constant = True)
     def lastModifiedDate(self):
-        return self._element.last_modified_date.astimezone().strftime("%d-%m-%Y %H:%M")
+        if self._element.last_modified_date is not None:
+            return self._element.last_modified_date.astimezone().strftime("%d-%m-%Y %H:%M")
+        else:
+            return None
 
     @pyqtProperty(str, constant = True)
     def lastModifiedBy(self):
-        return self._element.last_modified_by
+        if self._element.last_modified_by is not None:
+            return self._element.last_modified_by
+        else:
+            return None
 
     @pyqtProperty(OnshapeDocumentsModel, constant = True)
     def childModel(self):

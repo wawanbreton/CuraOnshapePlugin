@@ -25,6 +25,8 @@
         "src/model/OnshapeDocumentsItem.py",
         "src/data/OnshapeRoot.py",
         "src/data/OnshapeBaseModel.py",
+        "src/data/OnshapeTab.py",
+        "src/data/OnshapePart.py",
         "src/model/__init__.py",
         "src/api/AcceptBinaryDataScope.py",
         "resources/images/onshape-logo-full.svg",

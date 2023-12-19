@@ -12,12 +12,18 @@ from .OnshapeElement import OnshapeBaseModel
 class OnshapeWorkspace(OnshapeBaseModel):
 
     def __init__(self, data):
-        super().__init__(data['name'], data['id'])
-
-        self.last_modified_date = datetime.fromisoformat(data['modifiedAt'])
-        self.last_modified_by = data['lastModifier']['name']
-
-    def getIcon(self):
         dir = pathlib.Path(__file__).parent.resolve()
         icon_path = os.path.join(dir, '..', '..', 'resources', 'images', 'Workspace.svg')
-        return QUrl.fromLocalFile(icon_path).toString()
+        icon_url = QUrl.fromLocalFile(icon_path).toString()
+
+        super().__init__(data['name'],
+                         data['id'],
+                         None,
+                         datetime.fromisoformat(data['modifiedAt']),
+                         data['lastModifier']['name'],
+                         icon = icon_url)
+
+        self._document_id = data['documentId']
+
+    def loadChildren(self, api, on_finished, on_error):
+        api.listTabs(self._document_id, self.id, on_finished, on_error)

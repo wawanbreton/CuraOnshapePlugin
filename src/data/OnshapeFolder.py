@@ -8,7 +8,5 @@ from .OnshapeElement import OnshapeElement
 class OnshapeFolder(OnshapeElement):
 
     def __init__(self, data):
-        super().__init__(data)
-
-    def getIcon(self):
-        return QtApplication.getInstance().getTheme().getIcon('Folder', 'medium').toString()
+        super().__init__(data,
+                         icon = QtApplication.getInstance().getTheme().getIcon('Folder', 'medium').toString())
