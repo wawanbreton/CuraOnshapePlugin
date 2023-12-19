@@ -30,6 +30,8 @@
         "src/model/__init__.py",
         "src/api/AcceptBinaryDataScope.py",
         "resources/images/onshape-logo-full.svg",
-        "resources/images/Workspace.svg"
+        "resources/images/Workspace.svg",
+        "resources/qml/DocumentsPath.qml",
+        "resources/qml/DocumentCard.qml"
     ]
 }

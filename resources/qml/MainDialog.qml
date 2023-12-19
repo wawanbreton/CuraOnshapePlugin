@@ -34,7 +34,7 @@ Window
 
     StackView
     {
-        id: documentsTreeStack
+        id: documentsListStack
         anchors.fill: parent
         visible: controller.loggedIn
 
