@@ -58,6 +58,10 @@ class OnshapeDocumentsItem(QObject):
     def hasChildren(self):
         return self._element.has_children
 
+    @pyqtProperty(bool, constant = True)
+    def isDownloadable(self):
+        return self._element.is_downloadable
+
     @pyqtProperty(str, constant = True)
     def shortDesc(self):
         return self._element.short_desc
@@ -79,3 +83,6 @@ class OnshapeDocumentsItem(QObject):
     @pyqtProperty(OnshapeDocumentsModel, constant = True)
     def childModel(self):
         return self._subModel
+
+    def downloadMesh(self, on_progress, on_finished, on_error):
+        self._element.downloadMesh(self._api, on_progress, on_finished, on_error)

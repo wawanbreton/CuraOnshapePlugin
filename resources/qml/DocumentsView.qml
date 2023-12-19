@@ -40,7 +40,6 @@ Rectangle
             Layout.preferredHeight: UM.Theme.getSize("action_button").height
             Layout.preferredWidth: height
 
-
             enabled: !documentsModel.isRoot
             onClicked: root.parent.pop()
 
@@ -84,6 +83,7 @@ Rectangle
             spacing: UM.Theme.getSize("default_margin").height
             model: documentsModel.elements
             visible: documentsModel.loaded
+            clip: true
 
             ScrollBar.vertical: UM.ScrollBar { id: verticalScrollBar }
 
@@ -191,6 +191,16 @@ Rectangle
                                 }
                             }
                         }
+                    }
+
+                    Cura.PrimaryButton
+                    {
+                        anchors.right: parent.right
+                        anchors.bottom: parent.bottom
+                        anchors.margins: UM.Theme.getSize("default_margin").height
+                        visible: modelData.isDownloadable
+                        text: "Add to build plate"
+                        onClicked: controller.addToBuildPlate(modelData)
                     }
                 }
             }

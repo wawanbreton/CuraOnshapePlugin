@@ -14,7 +14,8 @@ class OnshapeBaseModel:
                  last_modified_by = None,
                  thumbnail_url = None,
                  icon = None,
-                 has_children = True):
+                 has_children = True,
+                 is_downloadable = False):
         self.name = name
         self.id = id
         self.short_desc = short_desc
@@ -23,9 +24,13 @@ class OnshapeBaseModel:
         self.thumbnail_url = thumbnail_url
         self.icon = icon
         self.has_children = has_children
+        self.is_downloadable = is_downloadable
 
     def loadChildren(self, api, on_finished, on_error):
         return NotImplementedError(f'Children of {self.__class__} are not to be loaded')
+
+    def downloadMesh(self, api, on_progress, on_finished, on_error):
+        return NotImplementedError(f'Unable to download mesh for {self.__class__}')
 
     def hasThumbnail(self):
         return self.thumbnail_url is not None

@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
 import json
+import tempfile
 
 from PyQt6.QtCore import QObject, pyqtSlot, QUrlQuery, QUrl
 
@@ -19,6 +20,7 @@ from ..data.OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
 class OnshapeApi(QObject):
     API_ROOT = 'https://cad.onshape.com/api/v6'
     DEFAULT_REQUEST_TIMEOUT = 10  # seconds
+    DOWNLOAD_REQUEST_TIMEOUT = 60 # seconds
     QUERY_LIMIT = 20 # This is the default value of the API, make it explicit
 
     def __init__(self):
@@ -153,3 +155,24 @@ class OnshapeApi(QObject):
                        callback = response_received,
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
+
+    def downloadPart(self, document_id, workspace_id, tab_id, part_id, on_progress, on_finished, on_error):
+        def response_received(reply):
+            with tempfile.NamedTemporaryFile(mode='wb', suffix='.stl', delete=False) as file:
+                file.write(reply.readAll())
+                on_finished(file.name)
+
+        url = QUrl(f'{self.API_ROOT}/partstudios/d/{document_id}/w/{workspace_id}/e/{tab_id}/stl')
+
+        query = QUrlQuery()
+        query.addQueryItem('partIds', part_id)
+        query.addQueryItem('units', 'millimeter')
+        query.addQueryItem('mode', 'binary')
+        url.setQuery(query)
+
+        self._http.get(url,
+                       scope = self._binary_scope,
+                       download_progress_callback = on_progress,
+                       callback = response_received,
+                       error_callback = on_error,
+                       timeout = self.DOWNLOAD_REQUEST_TIMEOUT)

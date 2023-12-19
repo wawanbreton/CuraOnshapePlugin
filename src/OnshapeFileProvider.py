@@ -24,6 +24,7 @@ class OnshapeFileProvider(FileProvider):
 
         self._auth_controller.tokenChanged.connect(self._api.setToken)
         self._auth_controller.tokenChanged.connect(self._onTokenChanged)
+        self._controller.partSelected.connect(self._onPartSelected)
 
     def run(self):
         plugin_path = os.path.dirname(os.path.dirname(__file__))
@@ -36,3 +37,7 @@ class OnshapeFileProvider(FileProvider):
     def _onTokenChanged(self, token):
         if token is not None:
             self._controller.loggedIn = True
+
+    @pyqtSlot()
+    def _onPartSelected(self):
+        self._dialog.hide()
