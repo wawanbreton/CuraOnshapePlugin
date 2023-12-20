@@ -23,12 +23,13 @@ Item
 
         anchors.fill: parent
         anchors.margins: UM.Theme.getSize("default_margin").width
-        spacing: UM.Theme.getSize("default_margin").width
+        spacing: 0
 
         Cura.SecondaryButton
         {
             id: button
 
+            Layout.rightMargin: UM.Theme.getSize("default_margin").width
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredHeight: UM.Theme.getSize("action_button").height
             Layout.preferredWidth: height
@@ -42,13 +43,34 @@ Item
             iconSize: height - leftPadding * 2
         }
 
-        UM.Label
+        Repeater
         {
-            Layout.alignment: Qt.AlignVCenter
-            Layout.fillWidth: true
+            model: documentsModel.path
 
-            text: documentsModel.path.join(" > ")
-            font: UM.Theme.getFont("large")
+            RowLayout
+            {
+                spacing: 0
+
+                UM.Label
+                {
+                    text: modelData
+                    font: UM.Theme.getFont("large")
+                }
+
+                UM.ColorImage
+                {
+                    source: UM.Theme.getIcon("ChevronSingleRight")
+                    height: UM.Theme.getFont("large").pixelSize
+                    width: height
+                    color: UM.Theme.getColor("text")
+                    visible: index < documentsModel.path.length - 1
+                }
+            }
+        }
+
+        Item
+        {
+            Layout.fillWidth: true
         }
     }
 }
