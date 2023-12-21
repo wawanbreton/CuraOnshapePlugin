@@ -168,6 +168,8 @@ class OnshapeApi(QObject):
         query.addQueryItem('partIds', part_id)
         query.addQueryItem('units', 'millimeter')
         query.addQueryItem('mode', 'binary')
+        query.addQueryItem('angleTolerance', '0.01')
+        query.addQueryItem('chordTolerance', '0.01')
         url.setQuery(query)
 
         self._http.get(url,
