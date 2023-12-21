@@ -32,6 +32,7 @@
         "resources/images/onshape-logo-full.svg",
         "resources/images/Workspace.svg",
         "resources/qml/DocumentsPath.qml",
-        "resources/qml/DocumentCard.qml"
+        "resources/qml/DocumentCard.qml",
+        "resources/qml/ErrorItem.qml"
     ]
 }

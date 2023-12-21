@@ -69,7 +69,12 @@ class OnshapeController(QObject):
             app.readLocalFile(QUrl.fromLocalFile(file_path), add_to_recent_files = False)
 
         def on_mesh_download_error(request, error):
-            Logger.warning(f'Error when retrieving STL file: {error}')
+            message.hide()
+            error_message = Message(text = request.errorString(),
+                                    title = "Request error",
+                                    lifetime = 10,
+                                    message_type = Message.MessageType.ERROR)
+            error_message.show()
 
         item.downloadMesh(on_mesh_download_progress, on_mesh_downloaded, on_mesh_download_error)
         self.partSelected.emit()

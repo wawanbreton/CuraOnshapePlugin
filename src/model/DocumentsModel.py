@@ -13,6 +13,7 @@ class DocumentsModel(QObject):
         self._api = api
         self._items = []
         self._path = path + [self._node.element.name]
+        self._load_error = None
 
         if self.loaded:
             self._updateItems()
@@ -40,6 +41,16 @@ class DocumentsModel(QObject):
     def isRoot(self):
         return isinstance(self._node.element, Root)
 
+    errorChanged = pyqtSignal()
+
+    @pyqtProperty(bool, notify = errorChanged)
+    def hasError(self):
+        return self._load_error is not None
+
+    @pyqtProperty(str, notify = errorChanged)
+    def error(self):
+        return self._load_error
+
     @pyqtSlot()
     def load(self):
         def on_finished(children):
@@ -47,7 +58,8 @@ class DocumentsModel(QObject):
             self._updateItems()
 
         def on_error(request, error):
-            print('pas bien', request, error)
+            self._load_error = request.errorString()
+            self.errorChanged.emit()
 
         if not self.loaded:
             self._node.element.loadChildren(self._api, on_finished, on_error)

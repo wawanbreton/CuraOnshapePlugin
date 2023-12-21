@@ -27,7 +27,13 @@ Item
         LoadingItem
         {
             anchors.fill: parent
-            visible: !documentsModel.loaded
+            visible: !documentsModel.loaded && !documentsModel.hasError
+        }
+
+        ErrorItem
+        {
+            anchors.fill: parent
+            visible: documentsModel.hasError
         }
 
         ListView
@@ -37,7 +43,7 @@ Item
             anchors.margins: UM.Theme.getSize("default_margin").width
             spacing: UM.Theme.getSize("default_margin").height
             model: documentsModel.elements
-            visible: documentsModel.loaded
+            visible: documentsModel.loaded && !documentsModel.hasError
             clip: true
 
             ScrollBar.vertical: UM.ScrollBar { id: verticalScrollBar }
