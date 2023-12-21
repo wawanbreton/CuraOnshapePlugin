@@ -12,13 +12,39 @@ Item
 {
     id: root
 
-    Label
+    ColumnLayout
     {
-        anchors.fill: parent
-        text: "Loading ..."
-        color: UM.Theme.getColor("text_default")
-        font: UM.Theme.getFont("large_bold")
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+        anchors.centerIn: parent
+
+        UM.ColorImage
+        {
+            id: loadingIndicator
+
+            Layout.preferredWidth: UM.Theme.getSize("card_icon").width
+            Layout.preferredHeight: UM.Theme.getSize("card_icon").height
+            Layout.alignment: Qt.AlignHCenter
+            source: UM.Theme.getIcon("ArrowDoubleCircleRight")
+            color: UM.Theme.getColor("text_default")
+
+            RotationAnimator
+            {
+                target: loadingIndicator
+                from: 0
+                to: 360
+                duration: 2000
+                loops: Animation.Infinite
+                running: true
+                alwaysRunToEnd: true
+            }
+        }
+
+        Label
+        {
+            Layout.fillWidth: true
+            text: "Loading ..."
+            color: UM.Theme.getColor("text_default")
+            font: UM.Theme.getFont("large_bold")
+            horizontalAlignment: Text.AlignHCenter
+        }
     }
 }

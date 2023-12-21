@@ -12,6 +12,7 @@ import UM 1.5 as UM
 Item
 {
     id: root
+    property variant catalog: UM.I18nCatalog { name: "cura" }
 
     ColumnLayout
     {
@@ -27,7 +28,7 @@ Item
 
         Label
         {
-            text: "Login to your Onshape account to access your documents"
+            text: "Sign in to your Onshape account to access your documents"
             color: UM.Theme.getColor("text_default")
             font: UM.Theme.getFont("large_bold")
             Layout.alignment: Qt.AlignHCenter
@@ -35,8 +36,11 @@ Item
 
         Cura.PrimaryButton
         {
-            text: "Login to Onshape"
+            text: catalog.i18nc("@button", "Sign in")
             Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: UM.Theme.getSize("account_button").width
+            Layout.preferredHeight: UM.Theme.getSize("account_button").height
+            fixedWidthMode: true
             onClicked: controller.login()
         }
     }
