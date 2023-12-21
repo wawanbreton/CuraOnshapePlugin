@@ -21,7 +21,7 @@ Item
 
         Image
         {
-            source: "../images/onshape-logo-full.svg"
+            source: UM.Theme.getColor("main_background").hslLightness > 0.5 ? "../images/onshape-logo-full.svg" : "../images/onshape-logo-full-dark.svg"
             Layout.maximumHeight: 300
             fillMode: Image.PreserveAspectFit
         }
