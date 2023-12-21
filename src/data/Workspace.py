@@ -6,10 +6,10 @@ import pathlib
 
 from PyQt6.QtCore import QUrl
 
-from .OnshapeElement import OnshapeBaseModel
+from .BaseModel import BaseModel
 
 
-class OnshapeWorkspace(OnshapeBaseModel):
+class Workspace(BaseModel):
 
     def __init__(self, data):
         dir = pathlib.Path(__file__).parent.resolve()

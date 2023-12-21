@@ -1,7 +1,7 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
 
-class OnshapeDocumentsTreeNode:
+class DocumentsTreeNode:
 
     def __init__(self, element):
         self.element = element

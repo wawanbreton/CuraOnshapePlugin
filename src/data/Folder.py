@@ -2,10 +2,10 @@
 
 from UM.Qt.QtApplication import QtApplication
 
-from .OnshapeElement import OnshapeElement
+from .Element import Element
 
 
-class OnshapeFolder(OnshapeElement):
+class Folder(Element):
 
     def __init__(self, data):
         super().__init__(data,

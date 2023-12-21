@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from .OnshapeElement import OnshapeBaseModel
+from .BaseModel import BaseModel
 
 
-class OnshapePart(OnshapeBaseModel):
+class Part(BaseModel):
 
     def __init__(self, data, document_id, workspace_id, tab_id):
         super().__init__(name = data['name'],

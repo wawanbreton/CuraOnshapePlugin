@@ -5,18 +5,18 @@ from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal
 from UM.Qt.QtApplication import QtApplication
 from UM.Logger import Logger
 
-from ..data.OnshapeDocument import OnshapeDocument
-from .OnshapeDocumentsModel import OnshapeDocumentsModel
+from ..data.Document import Document
+from .DocumentsModel import DocumentsModel
 
 
-class OnshapeDocumentsItem(QObject):
+class DocumentsItem(QObject):
 
     def __init__(self, node, api, path):
         super().__init__(parent = None)
         self._node = node
         self._api = api
         self._element = self._node.element
-        self._subModel = OnshapeDocumentsModel(self._node, self._api, path)
+        self._subModel = DocumentsModel(self._node, self._api, path)
         self._thumbnail_str_data = None
         self._thumbnail_downloaded = False
 
@@ -80,7 +80,7 @@ class OnshapeDocumentsItem(QObject):
         else:
             return None
 
-    @pyqtProperty(OnshapeDocumentsModel, constant = True)
+    @pyqtProperty(DocumentsModel, constant = True)
     def childModel(self):
         return self._subModel
 

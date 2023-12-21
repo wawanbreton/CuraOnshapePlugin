@@ -2,6 +2,6 @@
 
 from PyQt6.QtQml import qmlRegisterType
 
-from .OnshapeDocumentsModel import OnshapeDocumentsModel
+from .DocumentsModel import DocumentsModel
 
-qmlRegisterType(OnshapeDocumentsModel, "Onshape", 1, 0, "DocumentsModel")
+qmlRegisterType(DocumentsModel, "Onshape", 1, 0, "DocumentsModel")

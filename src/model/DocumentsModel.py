@@ -2,10 +2,10 @@
 
 from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
 
-from ..data.OnshapeRoot import OnshapeRoot
+from ..data.Root import Root
 
 
-class OnshapeDocumentsModel(QObject):
+class DocumentsModel(QObject):
 
     def __init__(self, node, api, path):
         super().__init__(parent = None)
@@ -28,8 +28,8 @@ class OnshapeDocumentsModel(QObject):
         return self._items
 
     def _updateItems(self):
-        from .OnshapeDocumentsItem import OnshapeDocumentsItem
-        self._items = [OnshapeDocumentsItem(child, self._api, self._path) for child in self._node.children]
+        from .DocumentsItem import DocumentsItem
+        self._items = [DocumentsItem(child, self._api, self._path) for child in self._node.children]
         self.elementsChanged.emit()
 
     @pyqtProperty(bool, notify = elementsChanged)
@@ -38,7 +38,7 @@ class OnshapeDocumentsModel(QObject):
 
     @pyqtProperty(bool, constant = True)
     def isRoot(self):
-        return isinstance(self._node.element, OnshapeRoot)
+        return isinstance(self._node.element, Root)
 
     @pyqtSlot()
     def load(self):

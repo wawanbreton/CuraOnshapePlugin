@@ -2,7 +2,7 @@
 
 import re
 
-class OnshapeBaseModel:
+class BaseModel:
 
     regex_thumbnail_size = re.compile('^([0-9]+)x([0-9]+)$')
 
@@ -42,7 +42,7 @@ class OnshapeBaseModel:
 
         for thumbnail in thumbnail_sizes:
             size_str = thumbnail['size']
-            re_match = OnshapeBaseModel.regex_thumbnail_size.match(size_str)
+            re_match = BaseModel.regex_thumbnail_size.match(size_str)
             if re_match is not None:
                 width = int(re_match[1])
                 height = int(re_match[2])

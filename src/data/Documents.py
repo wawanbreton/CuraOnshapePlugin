@@ -1,12 +1,12 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from ..data.OnshapeDocument import OnshapeDocument
-from ..data.OnshapeFolder import OnshapeFolder
-from ..data.OnshapeRoot import OnshapeRoot
-from ..data.OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
+from .Document import Document
+from .Folder import Folder
+from .Root import Root
+from .DocumentsTreeNode import DocumentsTreeNode
 
 
-class OnshapeDocuments:
+class Documents:
 
     def __init__(self):
         self.documents = []
@@ -14,10 +14,10 @@ class OnshapeDocuments:
 
     def appendDocuments(self, documents_data):
         for document_data in documents_data:
-            self.documents.append(OnshapeDocument(document_data))
+            self.documents.append(Document(document_data))
 
     def appendFolder(self, folder_data):
-        self.folders.append(OnshapeFolder(folder_data))
+        self.folders.append(Folder(folder_data))
 
     def getNextFolderToRetrieve(self):
         folders = set()
@@ -41,14 +41,14 @@ class OnshapeDocuments:
             return node
 
         for child in node.children:
-            parent = OnshapeDocuments._findParent(child, parent_id)
+            parent = Documents._findParent(child, parent_id)
             if parent is not None:
                 return parent
 
         return None
 
     def getTree(self):
-        root = OnshapeDocumentsTreeNode(OnshapeRoot())
+        root = DocumentsTreeNode(Root())
 
         elements = self.folders + self.documents
 
@@ -60,10 +60,10 @@ class OnshapeDocuments:
             index = 0
             while index < len(elements):
                 element = elements[index]
-                parent = OnshapeDocuments._findParent(root, element.parent_id)
+                parent = Documents._findParent(root, element.parent_id)
 
                 if parent is not None:
-                    parent.addChild(OnshapeDocumentsTreeNode(element))
+                    parent.addChild(DocumentsTreeNode(element))
                     elements.pop(index)
                     index -= 1
                     added_element = True

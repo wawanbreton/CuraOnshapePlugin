@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from .OnshapeBaseModel import OnshapeBaseModel
+from .BaseModel import BaseModel
 
 
-class OnshapeRoot(OnshapeBaseModel):
+class Root(BaseModel):
 
     def __init__(self):
         super().__init__('My documents', None)

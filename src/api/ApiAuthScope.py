@@ -6,7 +6,7 @@ from UM.Logger import Logger
 from UM.TaskManagement.HttpRequestScope import HttpRequestScope
 
 
-class OnshapeApiAuthScope(HttpRequestScope):
+class ApiAuthScope(HttpRequestScope):
 
     def __init__(self):
         super().__init__()

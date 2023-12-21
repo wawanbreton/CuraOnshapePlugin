@@ -1,9 +1,9 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from .OnshapeElement import OnshapeElement
+from .Element import Element
 
 
-class OnshapeDocument(OnshapeElement):
+class Document(Element):
 
     def __init__(self, data):
         super().__init__(data,

@@ -8,13 +8,13 @@ from PyQt6.QtCore import QObject, pyqtSlot, QUrlQuery, QUrl
 from UM.TaskManagement.HttpRequestManager import HttpRequestManager
 from UM.TaskManagement.HttpRequestScope import JsonDecoratorScope
 
-from .OnshapeApiAuthScope import OnshapeApiAuthScope
-from .OnshapeDocuments import OnshapeDocuments
+from .ApiAuthScope import ApiAuthScope
 from .AcceptBinaryDataScope import AcceptBinaryDataScope
-from ..data.OnshapeWorkspace import OnshapeWorkspace
-from ..data.OnshapeTab import OnshapeTab
-from ..data.OnshapePart import OnshapePart
-from ..data.OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
+from ..data.Documents import Documents
+from ..data.Workspace import Workspace
+from ..data.Tab import Tab
+from ..data.Part import Part
+from ..data.DocumentsTreeNode import DocumentsTreeNode
 
 
 class OnshapeApi(QObject):
@@ -26,7 +26,7 @@ class OnshapeApi(QObject):
     def __init__(self):
         super().__init__(parent = None)
         self._http = HttpRequestManager.getInstance()
-        self._auth_scope = OnshapeApiAuthScope()
+        self._auth_scope = ApiAuthScope()
         self._json_scope = JsonDecoratorScope(self._auth_scope)
         self._binary_scope = AcceptBinaryDataScope(self._auth_scope)
 
@@ -79,7 +79,7 @@ class OnshapeApi(QObject):
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
 
     def listDocuments(self, on_finished, on_error):
-        documents = OnshapeDocuments()
+        documents = Documents()
         self._listDocuments(on_finished, on_error, documents, 0)
 
     def listWorkspaces(self, document_id, on_finished, on_error):
@@ -88,7 +88,7 @@ class OnshapeApi(QObject):
             workspaces = []
 
             for workspace_data in data_json:
-                workspaces.append(OnshapeDocumentsTreeNode(OnshapeWorkspace(workspace_data)))
+                workspaces.append(DocumentsTreeNode(Workspace(workspace_data)))
 
             on_finished(workspaces)
 
@@ -106,7 +106,7 @@ class OnshapeApi(QObject):
             data_json = json.loads(bytes(reply.readAll()).decode())
 
             for tab_data in data_json:
-                tabs.append(OnshapeDocumentsTreeNode(OnshapeTab(tab_data, document_id, workspace_id)))
+                tabs.append(DocumentsTreeNode(Tab(tab_data, document_id, workspace_id)))
 
             on_finished(tabs)
 
@@ -129,7 +129,7 @@ class OnshapeApi(QObject):
             data_json = json.loads(bytes(reply.readAll()).decode())
 
             for part_data in data_json:
-                parts.append(OnshapeDocumentsTreeNode(OnshapePart(part_data, document_id, workspace_id, tab_id)))
+                parts.append(DocumentsTreeNode(Part(part_data, document_id, workspace_id, tab_id)))
 
             on_finished(parts)
 

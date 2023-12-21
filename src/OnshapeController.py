@@ -9,10 +9,10 @@ from cura.CuraApplication import CuraApplication
 from UM.Logger import Logger
 from UM.Message import Message
 
-from .model.OnshapeDocumentsModel import OnshapeDocumentsModel
-from .model.OnshapeDocumentsItem import OnshapeDocumentsItem
-from .data.OnshapeRoot import OnshapeRoot
-from .data.OnshapeDocumentsTreeNode import OnshapeDocumentsTreeNode
+from .model.DocumentsModel import DocumentsModel
+from .model.DocumentsItem import DocumentsItem
+from .data.Root import Root
+from .data.DocumentsTreeNode import DocumentsTreeNode
 
 
 class OnshapeController(QObject):
@@ -23,9 +23,7 @@ class OnshapeController(QObject):
         self._auth_controller = auth_controller
         self._api = api
         self._logged_in = False
-        self._documents_model = OnshapeDocumentsModel(OnshapeDocumentsTreeNode(OnshapeRoot()),
-                                                      self._api,
-                                                      [])
+        self._documents_model = DocumentsModel(DocumentsTreeNode(Root()), self._api, [])
 
     loggedInChanged = pyqtSignal()
 
@@ -51,7 +49,7 @@ class OnshapeController(QObject):
         os.remove(file_path)
         CuraApplication.getInstance().fileLoaded.disconnect(self._onFileLoaded)
 
-    @pyqtSlot(OnshapeDocumentsItem)
+    @pyqtSlot(DocumentsItem)
     def addToBuildPlate(self, item):
         message = Message(text = item.name,
                           dismissable = False,

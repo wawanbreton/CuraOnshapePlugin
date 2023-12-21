@@ -2,10 +2,10 @@
 
 from datetime import datetime
 
-from .OnshapeBaseModel import OnshapeBaseModel
+from .BaseModel import BaseModel
 
 
-class OnshapeElement(OnshapeBaseModel):
+class Element(BaseModel):
 
     def __init__(self, data, thumbnail_url = None, icon = None):
         super().__init__(data['name'],
