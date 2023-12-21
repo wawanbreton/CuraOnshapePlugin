@@ -15,7 +15,8 @@ class BaseModel:
                  thumbnail_url = None,
                  icon = None,
                  has_children = True,
-                 is_downloadable = False):
+                 is_downloadable = False,
+                 allow_single_child_shortcut = False):
         self.name = name
         self.id = id
         self.short_desc = short_desc
@@ -25,8 +26,18 @@ class BaseModel:
         self.icon = icon
         self.has_children = has_children
         self.is_downloadable = is_downloadable
+        self._allow_single_child_shortcut = allow_single_child_shortcut
 
     def loadChildren(self, api, on_finished, on_error):
+        def shortcut_callback(children):
+            if len(children) == 1:
+                children[0].element.loadChildren(api, on_finished, on_error)
+            else:
+                on_finished(children)
+
+        self._loadChildren(api, shortcut_callback if self._allow_single_child_shortcut else on_finished, on_error)
+
+    def _loadChildren(self, api, on_finished, on_error):
         return NotImplementedError(f'Children of {self.__class__} are not to be loaded')
 
     def downloadMesh(self, api, on_progress, on_finished, on_error):

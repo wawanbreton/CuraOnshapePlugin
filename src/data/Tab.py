@@ -12,5 +12,5 @@ class Tab(BaseModel):
         self._document_id = document_id
         self._workspace_id = workspace_id
 
-    def loadChildren(self, api, on_finished, on_error):
+    def _loadChildren(self, api, on_finished, on_error):
         api.listParts(self._document_id, self._workspace_id, self.id, on_finished, on_error)

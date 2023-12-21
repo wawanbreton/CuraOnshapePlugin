@@ -21,9 +21,10 @@ class Workspace(BaseModel):
                          None,
                          datetime.fromisoformat(data['modifiedAt']),
                          data['lastModifier']['name'],
-                         icon = icon_url)
+                         icon = icon_url,
+                         allow_single_child_shortcut = True)
 
         self._document_id = data['documentId']
 
-    def loadChildren(self, api, on_finished, on_error):
+    def _loadChildren(self, api, on_finished, on_error):
         api.listTabs(self._document_id, self.id, on_finished, on_error)
