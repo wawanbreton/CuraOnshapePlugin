@@ -156,7 +156,7 @@ class OnshapeApi(QObject):
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
 
-    def downloadPart(self, document_id, workspace_id, tab_id, part_id, on_progress, on_finished, on_error):
+    def downloadParts(self, document_id, workspace_id, tab_id, parts_ids, on_progress, on_finished, on_error):
         def response_received(reply):
             with tempfile.NamedTemporaryFile(mode='wb', suffix='.stl', delete=False) as file:
                 file.write(reply.readAll())
@@ -165,11 +165,12 @@ class OnshapeApi(QObject):
         url = QUrl(f'{self.API_ROOT}/partstudios/d/{document_id}/w/{workspace_id}/e/{tab_id}/stl')
 
         query = QUrlQuery()
-        query.addQueryItem('partIds', part_id)
+        query.addQueryItem('partIds', ','.join(parts_ids))
         query.addQueryItem('units', 'millimeter')
         query.addQueryItem('mode', 'binary')
         query.addQueryItem('angleTolerance', '0.01')
         query.addQueryItem('chordTolerance', '0.01')
+        query.addQueryItem('grouping', 'true')
         url.setQuery(query)
 
         self._http.get(url,

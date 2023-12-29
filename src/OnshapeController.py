@@ -49,9 +49,11 @@ class OnshapeController(QObject):
         os.remove(file_path)
         CuraApplication.getInstance().fileLoaded.disconnect(self._onFileLoaded)
 
-    @pyqtSlot(DocumentsItem)
-    def addToBuildPlate(self, item):
-        message = Message(text = item.name,
+
+
+    @pyqtSlot(list)
+    def addGroupToBuildPlate(self, items):
+        message = Message(text = '\n'.join([item.name for item in items]),
                           dismissable = False,
                           lifetime = 0,
                           progress = 0,
@@ -76,5 +78,19 @@ class OnshapeController(QObject):
                                     message_type = Message.MessageType.ERROR)
             error_message.show()
 
-        item.downloadMesh(on_mesh_download_progress, on_mesh_downloaded, on_mesh_download_error)
+        elements = [item.element for item in items]
+
+        first_element = elements[0]
+        self._api.downloadParts(first_element.document_id,
+                                first_element.workspace_id,
+                                first_element.tab_id,
+                                [element.id for element in elements],
+                                on_mesh_download_progress,
+                                on_mesh_downloaded,
+                                on_mesh_download_error)
+
         self.partSelected.emit()
+
+    @pyqtSlot(DocumentsItem)
+    def addToBuildPlate(self, item):
+        self.addGroupToBuildPlate([item])

@@ -2,10 +2,8 @@
 
 from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal
 
-from UM.Qt.QtApplication import QtApplication
 from UM.Logger import Logger
 
-from ..data.Document import Document
 from .DocumentsModel import DocumentsModel
 
 
@@ -15,14 +13,15 @@ class DocumentsItem(QObject):
         super().__init__(parent = None)
         self._node = node
         self._api = api
-        self._element = self._node.element
+        self.element = self._node.element
         self._subModel = DocumentsModel(self._node, self._api, path)
         self._thumbnail_str_data = None
         self._thumbnail_downloaded = False
+        self._selected = False
 
     @pyqtProperty(str, constant = True)
     def name(self):
-        return self._element.name
+        return self.element.name
 
     iconChanged = pyqtSignal()
 
@@ -36,47 +35,47 @@ class DocumentsItem(QObject):
 
     @pyqtProperty(str, notify = iconChanged)
     def icon(self):
-        if self._element.hasThumbnail():
+        if self.element.hasThumbnail():
             if self._thumbnail_str_data is not None:
                 return self._thumbnail_str_data
             else:
                 if not self._thumbnail_downloaded:
                     self._thumbnail_downloaded = True
-                    if self._element.thumbnail_url is not None:
-                        self._api.loadThumbnail(self._element.thumbnail_url,
+                    if self.element.thumbnail_url is not None:
+                        self._api.loadThumbnail(self.element.thumbnail_url,
                                                 self._onThumbnailReceived,
                                                 self._onThumbnailError)
                 return None
         else:
-            return self._element.icon
+            return self.element.icon
 
     @pyqtProperty(bool, constant = True)
     def hasThumbnail(self):
-        return self._element.hasThumbnail()
+        return self.element.hasThumbnail()
 
     @pyqtProperty(bool, constant = True)
     def hasChildren(self):
-        return self._element.has_children
+        return self.element.has_children
 
     @pyqtProperty(bool, constant = True)
     def isDownloadable(self):
-        return self._element.is_downloadable
+        return self.element.is_downloadable
 
     @pyqtProperty(str, constant = True)
     def shortDesc(self):
-        return self._element.short_desc
+        return self.element.short_desc
 
     @pyqtProperty(str, constant = True)
     def lastModifiedDate(self):
-        if self._element.last_modified_date is not None:
-            return self._element.last_modified_date.astimezone().strftime("%d-%m-%Y %H:%M")
+        if self.element.last_modified_date is not None:
+            return self.element.last_modified_date.astimezone().strftime("%d-%m-%Y %H:%M")
         else:
             return None
 
     @pyqtProperty(str, constant = True)
     def lastModifiedBy(self):
-        if self._element.last_modified_by is not None:
-            return self._element.last_modified_by
+        if self.element.last_modified_by is not None:
+            return self.element.last_modified_by
         else:
             return None
 
@@ -84,5 +83,12 @@ class DocumentsItem(QObject):
     def childModel(self):
         return self._subModel
 
-    def downloadMesh(self, on_progress, on_finished, on_error):
-        self._element.downloadMesh(self._api, on_progress, on_finished, on_error)
+    selectedChanged = pyqtSignal()
+
+    def setSelected(self, selected):
+        self._selected = selected
+        self.selectedChanged.emit()
+
+    @pyqtProperty(bool, notify = selectedChanged, fset = setSelected)
+    def selected(self):
+        return self._selected

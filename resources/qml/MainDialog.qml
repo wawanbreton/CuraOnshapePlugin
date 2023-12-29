@@ -6,13 +6,12 @@ import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.15
 
 import UM 1.2 as UM
+import Cura 1.5 as Cura
 
 Window
 {
     id: root
     title: "Open file from Onshape"
-
-    property var selectedElementModel
 
     modality: Qt.ApplicationModal
     width: 1024 * screenScaleFactor
@@ -61,16 +60,23 @@ Window
                     documentsModel: controller.documentsModel
                 }
             }
-        }
-    }
 
-    Component
-    {
-        id: subDocumentsViewComponent
+            Item
+            {
+                Layout.fillWidth: true
+                Layout.preferredHeight: buttonDownloadGroup.height + UM.Theme.getSize("default_margin").height * 2
 
-        DocumentsView
-        {
-            documentsModel: root.selectedElementModel
+                Cura.PrimaryButton
+                {
+                    id: buttonDownloadGroup
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.margins: UM.Theme.getSize("default_margin").height
+                    text: "Add group to build plate"
+                    enabled: documentsListStack.currentItem.documentsModel.selectedItems.length > 0
+                    onClicked: controller.addGroupToBuildPlate(documentsListStack.currentItem.documentsModel.selectedItems)
+                }
+            }
         }
     }
 }

@@ -40,9 +40,6 @@ class BaseModel:
     def _loadChildren(self, api, on_finished, on_error):
         return NotImplementedError(f'Children of {self.__class__} are not to be loaded')
 
-    def downloadMesh(self, api, on_progress, on_finished, on_error):
-        return NotImplementedError(f'Unable to download mesh for {self.__class__}')
-
     def hasThumbnail(self):
         return self.thumbnail_url is not None
 

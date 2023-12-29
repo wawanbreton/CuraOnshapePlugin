@@ -33,6 +33,11 @@ class DocumentsModel(QObject):
         self._items = [DocumentsItem(child, self._api, self._path) for child in self._node.children]
         self.elementsChanged.emit()
 
+        for item in self._items:
+            item.selectedChanged.connect(self.selectedItemsChanged)
+
+        self.selectedItemsChanged.emit()
+
     @pyqtProperty(bool, notify = elementsChanged)
     def loaded(self):
         return self._node.children_loaded
@@ -61,5 +66,14 @@ class DocumentsModel(QObject):
             self._load_error = request.errorString()
             self.errorChanged.emit()
 
+        for item in self._items:
+            item.selected = False
+
         if not self.loaded:
             self._node.element.loadChildren(self._api, on_finished, on_error)
+
+    selectedItemsChanged = pyqtSignal()
+
+    @pyqtProperty(list, notify = selectedItemsChanged)
+    def selectedItems(self):
+        return [item for item in self._items if item.selected]

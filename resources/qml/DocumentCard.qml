@@ -117,12 +117,25 @@ MouseArea
 
         Cura.PrimaryButton
         {
+            id: buttonAdd
             anchors.right: parent.right
             anchors.bottom: parent.bottom
             anchors.margins: UM.Theme.getSize("default_margin").height
             visible: modelData.isDownloadable
             text: "Add to build plate"
             onClicked: controller.addToBuildPlate(modelData)
+        }
+
+        Cura.PrimaryButton
+        {
+            color: UM.Theme.getColor(modelData.selected ? "um_green_5" : "primary_button")
+            hoverColor: UM.Theme.getColor(modelData.selected ? "um_green_9" : "primary_button_hover")
+            anchors.right: buttonAdd.left
+            anchors.bottom: parent.bottom
+            anchors.margins: UM.Theme.getSize("default_margin").height
+            visible: modelData.isDownloadable
+            text: modelData.selected ? "Remove from group" : "Add to group"
+            onClicked: modelData.selected = !modelData.selected
         }
     }
 }
