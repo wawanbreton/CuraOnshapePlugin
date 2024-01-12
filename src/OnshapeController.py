@@ -49,8 +49,6 @@ class OnshapeController(QObject):
         os.remove(file_path)
         CuraApplication.getInstance().fileLoaded.disconnect(self._onFileLoaded)
 
-
-
     @pyqtSlot(list)
     def addGroupToBuildPlate(self, items):
         message = Message(text = '\n'.join([item.name for item in items]),

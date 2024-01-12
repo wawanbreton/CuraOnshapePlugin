@@ -27,8 +27,6 @@ Item
 
         Cura.SecondaryButton
         {
-            id: button
-
             Layout.rightMargin: UM.Theme.getSize("default_margin").width
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredHeight: UM.Theme.getSize("action_button").height
@@ -71,6 +69,47 @@ Item
         Item
         {
             Layout.fillWidth: true
+        }
+
+        Button
+        {
+            id: buttonSettings
+
+            implicitHeight: UM.Theme.getSize("action_button").height
+            implicitWidth: implicitHeight
+            Layout.alignment: Qt.AlignVCenter
+            Layout.preferredHeight: implicitHeight
+            Layout.preferredWidth: implicitWidth
+
+            background: Rectangle
+            {
+                radius: Math.round(width * 0.5)
+                color: UM.Theme.getColor(buttonSettings.hovered ? "toolbar_button_hover" : "toolbar_background")
+            }
+
+            contentItem: Item
+            {
+                UM.ColorImage
+                {
+                    anchors.centerIn: parent
+                    implicitWidth: UM.Theme.getSize("action_button_icon").width
+                    implicitHeight: UM.Theme.getSize("action_button_icon").height
+                    source: UM.Theme.getIcon("Settings")
+                    color: UM.Theme.getColor("icon")
+                }
+            }
+
+            onClicked: componentSettings.createObject().show()
+        }
+
+        Component
+        {
+            id: componentSettings
+
+            SettingsDialog
+            {
+                modality: Qt.ApplicationModal
+            }
         }
     }
 }

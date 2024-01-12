@@ -33,6 +33,7 @@
         "resources/images/Workspace.svg",
         "resources/qml/DocumentsPath.qml",
         "resources/qml/DocumentCard.qml",
-        "resources/qml/ErrorItem.qml"
+        "resources/qml/ErrorItem.qml",
+        "resources/qml/SettingsDialog.qml"
     ]
 }

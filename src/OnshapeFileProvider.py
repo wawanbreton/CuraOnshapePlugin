@@ -4,6 +4,7 @@ import os
 
 from PyQt6.QtCore import pyqtSlot
 
+from UM.Application import Application
 from UM.FileProvider import FileProvider
 
 from .OnshapeController import OnshapeController
@@ -17,6 +18,9 @@ class OnshapeFileProvider(FileProvider):
         super().__init__()
         self.menu_item_display_text = 'From Onshape'
         self.shortcut = 'Ctrl+Alt+O'
+
+        Application.getInstance().getPreferences().addPreference("plugin_onshape/tesselation_resolution", "moderate")
+
         self._application = application
         self._auth_controller = OAuthController(self._application)
         self._api = OnshapeApi()

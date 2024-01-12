@@ -5,6 +5,7 @@ import tempfile
 
 from PyQt6.QtCore import QObject, pyqtSlot, QUrlQuery, QUrl
 
+from UM.Application import Application
 from UM.TaskManagement.HttpRequestManager import HttpRequestManager
 from UM.TaskManagement.HttpRequestScope import JsonDecoratorScope
 
@@ -168,8 +169,18 @@ class OnshapeApi(QObject):
         query.addQueryItem('partIds', ','.join(parts_ids))
         query.addQueryItem('units', 'millimeter')
         query.addQueryItem('mode', 'binary')
-        query.addQueryItem('angleTolerance', '0.01')
-        query.addQueryItem('chordTolerance', '0.01')
+
+        resolution = Application.getInstance().getPreferences().getValue('plugin_onshape/tesselation_resolution')
+        if resolution == 'coarse':
+            precision = '0.04'
+        elif resolution == 'fine':
+            precision = '0.01'
+        else:
+            precision = '0.02'
+
+        query.addQueryItem('angleTolerance', precision)
+        query.addQueryItem('chordTolerance', precision)
+
         query.addQueryItem('grouping', 'true')
         url.setQuery(query)
 
