@@ -14,6 +14,9 @@ Item
     id: root
     property variant catalog: UM.I18nCatalog { name: "cura" }
 
+    UM.I18nCatalog{id: catalog; name:"onshape"}
+    UM.I18nCatalog{id: catalogCura; name:"cura"}
+
     ColumnLayout
     {
         anchors.centerIn: parent
@@ -28,7 +31,7 @@ Item
 
         Label
         {
-            text: "Sign in to your Onshape account to access your documents"
+            text: catalog.i18nc("@label", "Sign in to your Onshape account to access your documents")
             color: UM.Theme.getColor("text_default")
             font: UM.Theme.getFont("large_bold")
             Layout.alignment: Qt.AlignHCenter
@@ -36,7 +39,7 @@ Item
 
         Cura.PrimaryButton
         {
-            text: catalog.i18nc("@button", "Sign in")
+            text: catalogCura.i18nc("@button", "Sign in")
             Layout.alignment: Qt.AlignHCenter
             Layout.preferredWidth: UM.Theme.getSize("account_button").width
             Layout.preferredHeight: UM.Theme.getSize("account_button").height

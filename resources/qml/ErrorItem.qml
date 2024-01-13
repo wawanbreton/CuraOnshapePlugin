@@ -12,6 +12,8 @@ Item
 {
     id: root
 
+    UM.I18nCatalog{id: catalog; name:"onshape"}
+
     ColumnLayout
     {
         anchors.centerIn: parent
@@ -28,7 +30,7 @@ Item
         Label
         {
             Layout.maximumWidth: root.width
-            text: "Request error: " + documentsModel.error
+            text: catalog.i18nc("@label",  "Request error: %1").arg(documentsModel.error)
             color: UM.Theme.getColor("text_default")
             font: UM.Theme.getFont("large_bold")
             horizontalAlignment: Text.AlignHCenter

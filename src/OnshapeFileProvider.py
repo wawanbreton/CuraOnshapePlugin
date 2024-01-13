@@ -6,6 +6,9 @@ from PyQt6.QtCore import pyqtSlot
 
 from UM.Application import Application
 from UM.FileProvider import FileProvider
+from UM.i18n import i18nCatalog
+from UM.Logger import Logger
+from UM.Resources import Resources
 
 from .OnshapeController import OnshapeController
 from .OAuthController import OAuthController
@@ -18,6 +21,18 @@ class OnshapeFileProvider(FileProvider):
         super().__init__()
         self.menu_item_display_text = 'From Onshape'
         self.shortcut = 'Ctrl+Alt+O'
+
+        dir_path = os.path.dirname(__file__)
+        dir_path = os.path.join(dir_path, '..')
+        print(os.path.abspath(dir_path))
+        Resources.addSearchPath(os.path.abspath(dir_path))
+
+        i18n_catalog = i18nCatalog("onshape")
+
+        if i18n_catalog.hasTranslationLoaded():
+            Logger.info("OnShape Plugin translation loaded !")
+        else:
+            Logger.warning("OnShape Plugin translation not loaded")
 
         Application.getInstance().getPreferences().addPreference("plugin_onshape/tesselation_resolution", "moderate")
 

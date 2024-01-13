@@ -34,6 +34,8 @@
         "resources/qml/DocumentsPath.qml",
         "resources/qml/DocumentCard.qml",
         "resources/qml/ErrorItem.qml",
-        "resources/qml/SettingsDialog.qml"
+        "resources/qml/SettingsDialog.qml",
+        "i18n/onshape.pot",
+        "i18n/fr_FR/onshape.po"
     ]
 }

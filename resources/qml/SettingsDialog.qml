@@ -13,6 +13,10 @@ Window
     width: column.implicitWidth + 4 * UM.Theme.getSize("default_margin").width
     height: column.implicitHeight + 4 * UM.Theme.getSize("default_margin").width
 
+    title: catalog.i18nc("@title:window", "Onshape settings")
+
+    UM.I18nCatalog{id: catalog; name:"onshape"}
+
     Rectangle
     {
         color: UM.Theme.getColor("detail_background")
@@ -35,7 +39,7 @@ Window
                 {
                     color: UM.Theme.getColor("text")
                     font: UM.Theme.getFont("medium_bold")
-                    text: "Tesselation resolution"
+                    text: catalog.i18nc("@label", "Tesselation resolution")
                     Layout.fillWidth: true
                 }
 
@@ -48,7 +52,7 @@ Window
                 Cura.RadioButton
                 {
                     id: radioResolutionCoarse
-                    text: "Coarse"
+                    text: catalog.i18nc("@label", "Coarse")
                     checked: UM.Preferences.getValue("plugin_onshape/tesselation_resolution") === "coarse"
                     onClicked: UM.Preferences.setValue("plugin_onshape/tesselation_resolution", "coarse")
                 }
@@ -56,7 +60,7 @@ Window
                 Cura.RadioButton
                 {
                     id: radioResolutionModerate
-                    text: "Moderate"
+                    text: catalog.i18nc("@label", "Moderate")
                     checked: UM.Preferences.getValue("plugin_onshape/tesselation_resolution") === "moderate"
                     onClicked: UM.Preferences.setValue("plugin_onshape/tesselation_resolution", "moderate")
                 }
@@ -64,7 +68,7 @@ Window
                 Cura.RadioButton
                 {
                     id: radioResolutionFine
-                    text: "Fine"
+                    text: catalog.i18nc("@label", "Fine")
                     checked: UM.Preferences.getValue("plugin_onshape/tesselation_resolution") === "fine"
                     onClicked: UM.Preferences.setValue("plugin_onshape/tesselation_resolution", "fine")
                 }

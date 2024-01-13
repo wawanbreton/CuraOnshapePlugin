@@ -12,6 +12,8 @@ Item
 {
     id: root
 
+    UM.I18nCatalog{id: catalog; name:"onshape"}
+
     ColumnLayout
     {
         anchors.centerIn: parent
@@ -41,7 +43,7 @@ Item
         Label
         {
             Layout.fillWidth: true
-            text: "Loading ..."
+            text: catalog.i18nc("@label",  "Loading ...")
             color: UM.Theme.getColor("text_default")
             font: UM.Theme.getFont("large_bold")
             horizontalAlignment: Text.AlignHCenter

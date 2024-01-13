@@ -11,13 +11,15 @@ import Cura 1.5 as Cura
 Window
 {
     id: root
-    title: "Open file from Onshape"
+    title: catalog.i18nc("@title:window", "Open model from Onshape")
 
     modality: Qt.ApplicationModal
     width: 1024 * screenScaleFactor
     height: 768 * screenScaleFactor
     minimumWidth: 800 * screenScaleFactor
     minimumHeight: 600 * screenScaleFactor
+
+    UM.I18nCatalog{id: catalog; name:"onshape"}
 
     Shortcut
     {
@@ -72,7 +74,7 @@ Window
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
                     anchors.margins: UM.Theme.getSize("default_margin").height
-                    text: "Add group to build plate"
+                    text: catalog.i18nc("@action:button", "Add group to build plate")
                     enabled: documentsListStack.currentItem.documentsModel.selectedItems.length > 0
                     onClicked: controller.addGroupToBuildPlate(documentsListStack.currentItem.documentsModel.selectedItems)
                 }

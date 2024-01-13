@@ -14,6 +14,8 @@ MouseArea
 {
     id: root
 
+    UM.I18nCatalog{id: catalog; name:"onshape"}
+
     implicitWidth:
     {
         var width = listView.width
@@ -101,10 +103,10 @@ MouseArea
                         }
                         if(modelData.lastModifiedDate)
                         {
-                            var text_updated = "Last updated: %1".arg(modelData.lastModifiedDate)
+                            var text_updated = catalog.i18nc("@label", "Last updated: %1").arg(modelData.lastModifiedDate)
                             if(modelData.lastModifiedBy)
                             {
-                                text_updated += " by %1".arg(modelData.lastModifiedBy)
+                                text_updated += catalog.i18nc("@label", " by %1").arg(modelData.lastModifiedBy)
                             }
                             texts.push(text_updated)
                         }
@@ -122,7 +124,7 @@ MouseArea
             anchors.bottom: parent.bottom
             anchors.margins: UM.Theme.getSize("default_margin").height
             visible: modelData.isDownloadable
-            text: "Add to build plate"
+            text: catalog.i18nc("@action:button", "Add to build plate")
             onClicked: controller.addToBuildPlate(modelData)
         }
 
@@ -134,7 +136,7 @@ MouseArea
             anchors.bottom: parent.bottom
             anchors.margins: UM.Theme.getSize("default_margin").height
             visible: modelData.isDownloadable
-            text: modelData.selected ? "Remove from group" : "Add to group"
+            text: modelData.selected ? catalog.i18nc("@action:button", "Remove from group") : catalog.i18nc("@action:button", "Add to group")
             onClicked: modelData.selected = !modelData.selected
         }
     }
