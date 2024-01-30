@@ -7,15 +7,16 @@ from UM.TaskManagement.HttpRequestScope import HttpRequestScope
 
 
 class ApiAuthScope(HttpRequestScope):
+    """HTTP authentication scope using a given access token"""
 
     def __init__(self):
         super().__init__()
-        self._token = None
+        self._token: str = None
 
-    def setToken(self, token):
+    def setToken(self, token: str) -> None:
         self._token = token
 
-    def requestHook(self, request: QNetworkRequest):
+    def requestHook(self, request: QNetworkRequest) -> None:
         super().requestHook(request)
 
         if self._token is not None:

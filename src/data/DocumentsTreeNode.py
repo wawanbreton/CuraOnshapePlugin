@@ -1,12 +1,16 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
+from typing import List
+
+from .BaseModel import BaseModel
+
 
 class DocumentsTreeNode:
 
     def __init__(self, element):
-        self.element = element
-        self.children = []
-        self.children_loaded = False
+        self.element: BaseModel = element
+        self.children: List[DocumentsTreeNode] = []
+        self.children_loaded: bool = False
 
     def addChild(self, node):
         self.children.append(node)

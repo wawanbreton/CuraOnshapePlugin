@@ -3,7 +3,10 @@
 import json
 import tempfile
 
-from PyQt6.QtCore import QObject, pyqtSlot, QUrlQuery, QUrl
+from PyQt6.QtCore import QObject, pyqtSlot, QUrlQuery, QUrl, QByteArray
+from PyQt6.QtNetwork import QNetworkReply
+
+from typing import Callable, List
 
 from UM.Application import Application
 from UM.TaskManagement.HttpRequestManager import HttpRequestManager
@@ -19,24 +22,35 @@ from ..data.DocumentsTreeNode import DocumentsTreeNode
 
 
 class OnshapeApi(QObject):
+    """Manager giving access to the required calls to the remote Onshape REST API"""
+
     API_ROOT = 'https://cad.onshape.com/api/v6'
     DEFAULT_REQUEST_TIMEOUT = 10  # seconds
     DOWNLOAD_REQUEST_TIMEOUT = 60 # seconds
     QUERY_LIMIT = 20 # This is the default value of the API, make it explicit
 
     def __init__(self):
-        super().__init__(parent = None)
-        self._http = HttpRequestManager.getInstance()
-        self._auth_scope = ApiAuthScope()
-        self._json_scope = JsonDecoratorScope(self._auth_scope)
-        self._binary_scope = AcceptBinaryDataScope(self._auth_scope)
+        super().__init__()
+        self._http: HttpRequestManager = HttpRequestManager.getInstance()
+        self._auth_scope: ApiAuthScope = ApiAuthScope()
+        self._json_scope: JsonDecoratorScope = JsonDecoratorScope(self._auth_scope)
+        self._binary_scope: AcceptBinaryDataScope = AcceptBinaryDataScope(self._auth_scope)
 
     @pyqtSlot(str)
-    def setToken(self, token):
+    def setToken(self, token: str):
+        """Sets the authentication token, which is required to make API calls"""
         self._auth_scope.setToken(token)
 
-    def _getFolders(self, on_finished, on_error, documents):
-        def response_received(reply):
+    def _getFolders(self,
+                    on_finished: Callable[[List[DocumentsTreeNode]], None],
+                    on_error: Callable[[QNetworkReply, QNetworkReply.NetworkError], None],
+                    documents: Documents):
+        """
+        Retrieves the next required folder content, which is done recursively and dynamically
+        because we don't know in advance which subfolders are existing and non-empty.
+        """
+
+        def response_received(reply: QNetworkReply):
             data_json = json.loads(bytes(reply.readAll()).decode())
             documents.appendFolder(data_json)
             self._getFolders(on_finished, on_error, documents)
@@ -54,7 +68,17 @@ class OnshapeApi(QObject):
         else:
             on_finished(documents.getTree().children)
 
-    def _listDocuments(self, on_finished, on_error, documents, offset):
+    def _listDocuments(self,
+                       on_finished: Callable[[List[DocumentsTreeNode]], None],
+                       on_error: Callable[[QNetworkReply, QNetworkReply.NetworkError], None],
+                       documents: Documents,
+                       offset: int):
+        """
+        Retrieves the list of root documents in the user storage. This is done multiple times
+        because each call retrieves a sublist of the total, hence the given offset. Once the
+        documents are complete, we also start receiving the folders tree.
+        """
+
         url = QUrl(f'{self.API_ROOT}/documents')
 
         query = QUrlQuery()
@@ -64,7 +88,7 @@ class OnshapeApi(QObject):
 
         url.setQuery(query)
 
-        def response_received(reply):
+        def response_received(reply: QNetworkReply):
             data_json = json.loads(bytes(reply.readAll()).decode())
             documents.appendDocuments(data_json['items'])
 
@@ -79,12 +103,19 @@ class OnshapeApi(QObject):
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
 
-    def listDocuments(self, on_finished, on_error):
+    def listDocuments(self,
+                      on_finished: Callable[[List[DocumentsTreeNode]], None],
+                      on_error: Callable[[QNetworkReply, QNetworkReply.NetworkError], None]):
+        """Lists the root documents and the whole folder tree present in the user storage"""
         documents = Documents()
         self._listDocuments(on_finished, on_error, documents, 0)
 
-    def listWorkspaces(self, document_id, on_finished, on_error):
-        def response_received(reply):
+    def listWorkspaces(self,
+                       document_id: str,
+                       on_finished: Callable[[List[DocumentsTreeNode]], None],
+                       on_error: Callable[[QNetworkReply, QNetworkReply.NetworkError], None]):
+        """Lists the available workspaces in the given document"""
+        def response_received(reply: QNetworkReply):
             data_json = json.loads(bytes(reply.readAll()).decode())
             workspaces = []
 
@@ -101,8 +132,13 @@ class OnshapeApi(QObject):
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
 
-    def listTabs(self, document_id, workspace_id, on_finished, on_error):
-        def response_received(reply):
+    def listTabs(self,
+                 document_id: str,
+                 workspace_id: str,
+                 on_finished: Callable[[List[DocumentsTreeNode]], None],
+                 on_error: Callable[[QNetworkReply, QNetworkReply.NetworkError], None]):
+        """Lists the available tabs (sub-documents) in the given document"""
+        def response_received(reply: QNetworkReply):
             tabs = []
             data_json = json.loads(bytes(reply.readAll()).decode())
 
@@ -124,8 +160,14 @@ class OnshapeApi(QObject):
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
 
-    def listParts(self, document_id, workspace_id, tab_id, on_finished, on_error):
-        def response_received(reply):
+    def listParts(self,
+                  document_id: str,
+                  workspace_id: str,
+                  tab_id: str,
+                  on_finished: Callable[[List[DocumentsTreeNode]], None],
+                  on_error: Callable[[QNetworkReply, QNetworkReply.NetworkError], None]):
+        """Lists the available parts in the given tab"""
+        def response_received(reply: QNetworkReply):
             parts = []
             data_json = json.loads(bytes(reply.readAll()).decode())
 
@@ -147,8 +189,12 @@ class OnshapeApi(QObject):
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
 
-    def loadThumbnail(self, thumbnail_url, on_finished, on_error):
-        def response_received(reply):
+    def loadThumbnail(self,
+                      thumbnail_url: str,
+                      on_finished: Callable[[QByteArray], None],
+                      on_error: Callable[[QNetworkReply, QNetworkReply.NetworkError], None]):
+        """Loads the thumbnail image, to be found at the given URL"""
+        def response_received(reply: QNetworkReply):
             on_finished(reply.readAll())
 
         self._http.get(thumbnail_url,
@@ -157,8 +203,21 @@ class OnshapeApi(QObject):
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
 
-    def downloadParts(self, document_id, workspace_id, tab_id, parts_ids, on_progress, on_finished, on_error):
-        def response_received(reply):
+    def downloadParts(self,
+                      document_id: str,
+                      workspace_id: str,
+                      tab_id: str,
+                      parts_ids: List[str],
+                      on_progress: Callable[[int, int], None],
+                      on_finished: Callable[[str], None],
+                      on_error: Callable[[QNetworkReply, QNetworkReply.NetworkError], None]):
+        """
+        Downloads the given part(s) as STL data into a local file.
+        The finished callback receives the path of the created local file.
+        The created file will be placed in a temporary folder. However, it is up to the caller to
+        remove the file as soon as it is no more required.
+        """
+        def response_received(reply: QNetworkReply):
             with tempfile.NamedTemporaryFile(mode='wb', suffix='.stl', delete=False) as file:
                 file.write(reply.readAll())
                 on_finished(file.name)
