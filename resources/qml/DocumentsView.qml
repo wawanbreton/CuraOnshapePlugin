@@ -7,15 +7,14 @@ import QtQuick.Layouts 1.15
 
 import Cura 1.5 as Cura
 import UM 1.5 as UM
-import Onshape 1.0 as Onshape
 
 
 Item
 {
     id: root
 
-    property Onshape.DocumentsModel documentsModel
-    signal elementSelected(Onshape.DocumentsModel subModel)
+    property var documentsModel
+    signal elementSelected(var subModel)
     readonly property real iconSizeFactor: 1.2
 
     Rectangle
@@ -55,5 +54,5 @@ Item
     Component.onCompleted: loadDocumentsIfVisible()
     onVisibleChanged: loadDocumentsIfVisible()
 
-    function loadDocumentsIfVisible() { if(visible) { documentsModel.load() } }
+    function loadDocumentsIfVisible() { if(visible) { documentsModel.load() } }
 }

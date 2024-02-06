@@ -7,7 +7,6 @@ import QtQuick.Layouts 1.15
 
 import Cura 1.5 as Cura
 import UM 1.5 as UM
-import Onshape 1.0 as Onshape
 
 
 MouseArea

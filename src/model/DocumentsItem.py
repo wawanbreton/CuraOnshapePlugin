@@ -79,7 +79,7 @@ class DocumentsItem(QObject):
         else:
             return None
 
-    @pyqtProperty(DocumentsModel, constant = True)
+    @pyqtProperty(QObject, constant = True)
     def childModel(self):
         return self._subModel
 

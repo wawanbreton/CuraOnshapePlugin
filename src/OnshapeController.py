@@ -37,7 +37,7 @@ class OnshapeController(QObject):
     def loggedIn(self):
         return self._logged_in
 
-    @pyqtProperty(QAbstractItemModel, constant = True)
+    @pyqtProperty(QObject, constant = True)
     def documentsModel(self):
         return self._documents_model
 

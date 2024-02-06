@@ -7,12 +7,11 @@ import QtQuick.Layouts 1.15
 
 import Cura 1.5 as Cura
 import UM 1.5 as UM
-import Onshape 1.0 as Onshape
 
 
 Item
 {
-    property Onshape.DocumentsModel documentsModel
+    property var documentsModel
 
     id: root
     implicitHeight: row.implicitHeight + 2 * UM.Theme.getSize("default_margin").width
