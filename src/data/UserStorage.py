@@ -1,16 +1,23 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
+from typing import List
+
 from .Document import Document
 from .Folder import Folder
 from .Root import Root
 from .DocumentsTreeNode import DocumentsTreeNode
 
 
-class Documents:
+class UserStorage:
+    """
+    Represents a view of the user storage, containing folders and documents. This view is to be
+    completed with multiple requests, as we can't load all the folders at once and we also don't
+    known which subfolders are useful.
+    """
 
     def __init__(self):
-        self.documents = []
-        self.folders = []
+        self.documents: List['Document'] = []
+        self.folders: List['Folder'] = []
 
     def appendDocuments(self, documents_data):
         for document_data in documents_data:
@@ -41,7 +48,7 @@ class Documents:
             return node
 
         for child in node.children:
-            parent = Documents._findParent(child, parent_id)
+            parent = UserStorage._findParent(child, parent_id)
             if parent is not None:
                 return parent
 
@@ -60,7 +67,7 @@ class Documents:
             index = 0
             while index < len(elements):
                 element = elements[index]
-                parent = Documents._findParent(root, element.parent_id)
+                parent = UserStorage._findParent(root, element.parent_id)
 
                 if parent is not None:
                     parent.addChild(DocumentsTreeNode(element))

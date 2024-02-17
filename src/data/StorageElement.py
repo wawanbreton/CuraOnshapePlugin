@@ -1,13 +1,20 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
+from typing import Dict, Any, Optional
+
 from datetime import datetime
 
-from .BaseModel import BaseModel
+from .BaseElement import BaseElement
 
 
-class Element(BaseModel):
+class StorageElement(BaseElement):
+    """Base class for a storage element, folder or document"""
 
-    def __init__(self, data, thumbnail_url = None, icon = None, allow_single_child_shortcut = False):
+    def __init__(self,
+                 data: Dict[str, Any],
+                 thumbnail_url: Optional[str] = None,
+                 icon: Optional[str] = None,
+                 allow_single_child_shortcut: bool = False):
         super().__init__(data['name'],
                          data['id'],
                          data['owner']['name'],
@@ -17,4 +24,4 @@ class Element(BaseModel):
                          icon = icon,
                          allow_single_child_shortcut = allow_single_child_shortcut)
 
-        self.parent_id = data['parentId']
+        self.parent_id: str = data['parentId']

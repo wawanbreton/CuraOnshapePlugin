@@ -1,17 +1,19 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
+from typing import Callable, List, Dict, Any
+
 from datetime import datetime
 import os
 import pathlib
 
 from PyQt6.QtCore import QUrl
 
-from .BaseModel import BaseModel
+from .BaseElement import BaseElement
 
 
-class Workspace(BaseModel):
+class Workspace(BaseElement):
 
-    def __init__(self, data):
+    def __init__(self, data: Dict[str, Any]):
         dir = pathlib.Path(__file__).parent.resolve()
         icon_path = os.path.join(dir, '..', '..', 'resources', 'images', 'Workspace.svg')
         icon_url = QUrl.fromLocalFile(icon_path).toString()
@@ -26,5 +28,8 @@ class Workspace(BaseModel):
 
         self._document_id = data['documentId']
 
-    def _loadChildren(self, api, on_finished, on_error):
+    def _loadChildren(self,
+                      api: 'OnshapeApi',
+                      on_finished: Callable[[List['DocumentsTreeNode']], None],
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
         api.listTabs(self._document_id, self.id, on_finished, on_error)
