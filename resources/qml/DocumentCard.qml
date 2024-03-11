@@ -30,9 +30,18 @@ MouseArea
     implicitHeight: UM.Theme.getSize("card_icon").height * iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height
 
     hoverEnabled: true
-    enabled: modelData.hasChildren
-    onClicked: documentsListStack.push("DocumentsView.qml",
-                                       {"documentsModel": modelData.childModel})
+    enabled: modelData.hasChildren || modelData.isDownloadable // Should actually always be true...
+    onClicked:
+    {
+        if(modelData.hasChildren)
+        {
+            documentsListStack.push("DocumentsView.qml", {"documentsModel": modelData.childModel})
+        }
+        else if(modelData.isDownloadable)
+        {
+            modelData.selected = !modelData.selected
+        }
+    }
 
     Rectangle
     {
@@ -116,27 +125,16 @@ MouseArea
             }
         }
 
-        Cura.PrimaryButton
+        UM.CheckBox
         {
-            id: buttonAdd
+            id: checkBoxSelected
             anchors.right: parent.right
-            anchors.bottom: parent.bottom
+            anchors.verticalCenter: parent.verticalCenter
             anchors.margins: UM.Theme.getSize("default_margin").height
             visible: modelData.isDownloadable
-            text: catalog.i18nc("@action:button", "Add to build plate")
-            onClicked: controller.addToBuildPlate(modelData)
-        }
-
-        Cura.PrimaryButton
-        {
-            color: UM.Theme.getColor(modelData.selected ? "um_green_5" : "primary_button")
-            hoverColor: UM.Theme.getColor(modelData.selected ? "um_green_9" : "primary_button_hover")
-            anchors.right: buttonAdd.left
-            anchors.bottom: parent.bottom
-            anchors.margins: UM.Theme.getSize("default_margin").height
-            visible: modelData.isDownloadable
-            text: modelData.selected ? catalog.i18nc("@action:button", "Remove from group") : catalog.i18nc("@action:button", "Add to group")
-            onClicked: modelData.selected = !modelData.selected
+            text: catalog.i18nc("@action:button", "Add to selection")
+            checked: modelData.selected
+            onCheckedChanged: modelData.selected = checked
         }
     }
 }

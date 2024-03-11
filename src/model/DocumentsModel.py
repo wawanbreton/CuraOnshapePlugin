@@ -72,6 +72,19 @@ class DocumentsModel(QObject):
         if not self.loaded:
             self._node.element.loadChildren(self._api, on_finished, on_error)
 
+    @pyqtProperty(bool, constant = True)
+    def refreshable(self):
+        return self._node.element.is_refreshable
+
+    @pyqtSlot()
+    def refresh(self):
+        self._items = []
+        self._node.clear()
+
+        self.elementsChanged.emit()
+
+        self.load()
+
     selectedItemsChanged = pyqtSignal()
 
     @pyqtProperty(list, notify = selectedItemsChanged)

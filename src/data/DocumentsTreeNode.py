@@ -30,3 +30,7 @@ class DocumentsTreeNode:
 
     def getId(self):
         return self.element.id
+
+    def clear(self):
+        self.children_loaded = False
+        self.children = []

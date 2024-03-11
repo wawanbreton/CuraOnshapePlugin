@@ -36,6 +36,7 @@
         "resources/qml/ErrorItem.qml",
         "resources/qml/SettingsDialog.qml",
         "i18n/onshape.pot",
-        "i18n/fr_FR/onshape.po"
+        "i18n/fr_FR/onshape.po",
+        "resources/qml/DocumentsActions.qml"
     ]
 }

@@ -2,6 +2,7 @@
 
 import os
 import math
+import functools
 
 from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot, pyqtProperty, QAbstractItemModel, QUrl
 
@@ -24,6 +25,9 @@ class OnshapeController(QObject):
         self._api = api
         self._logged_in = False
         self._documents_model = DocumentsModel(DocumentsTreeNode(Root()), self._api, [])
+        self._temp_files = []
+
+        CuraApplication.getInstance().fileLoaded.connect(self._onFileLoaded)
 
     loggedInChanged = pyqtSignal()
 
@@ -46,49 +50,54 @@ class OnshapeController(QObject):
         self._auth_controller.login()
 
     def _onFileLoaded(self, file_path):
-        os.remove(file_path)
-        CuraApplication.getInstance().fileLoaded.disconnect(self._onFileLoaded)
+        if file_path in self._temp_files:
+            os.remove(file_path)
+            self._temp_files.remove(file_path)
+            print("File removed ", file_path)
 
-    @pyqtSlot(list)
-    def addGroupToBuildPlate(self, items):
-        message = Message(text = '\n'.join([item.name for item in items]),
-                          dismissable = False,
-                          lifetime = 0,
-                          progress = 0,
-                          title = "Downloading...")
-        message.setProgress(0)
-        message.show()
+    @staticmethod
+    def _onMeshDownloadProgress(message, transmitted, total):
+        message.setProgress(math.floor(transmitted * 100.0 / total))
 
-        def on_mesh_download_progress(transmitted, total):
-            message.setProgress(math.floor(transmitted * 100.0 / total))
+    def _onMeshDownloaded(self, message, file_path):
+        message.hide()
+        self._temp_files.append(file_path)
+        CuraApplication.getInstance().readLocalFile(QUrl.fromLocalFile(file_path), add_to_recent_files = False)
 
-        def on_mesh_downloaded(file_path):
-            message.hide()
-            app = CuraApplication.getInstance()
-            app.fileLoaded.connect(self._onFileLoaded)
-            app.readLocalFile(QUrl.fromLocalFile(file_path), add_to_recent_files = False)
+    @staticmethod
+    def _onMeshDownloadError(message, request, error):
+        message.hide()
+        error_message = Message(text = request.errorString(),
+                                title = "Request error",
+                                lifetime = 10,
+                                message_type = Message.MessageType.ERROR)
+        error_message.show()
 
-        def on_mesh_download_error(request, error):
-            message.hide()
-            error_message = Message(text = request.errorString(),
-                                    title = "Request error",
-                                    lifetime = 10,
-                                    message_type = Message.MessageType.ERROR)
-            error_message.show()
+    @pyqtSlot(list, bool)
+    def addToBuildPlate(self, items, grouped):
+        if grouped:
+            grouped_items = [items]
+        else:
+            grouped_items = [[item] for item in items]
 
-        elements = [item.element for item in items]
+        for items_group in grouped_items:
+            message = Message(text = '\n'.join([item.name for item in items_group]),
+                              dismissable = False,
+                              lifetime = 0,
+                              progress = 0,
+                              title = "Downloading...")
+            message.setProgress(0)
+            message.show()
 
-        first_element = elements[0]
-        self._api.downloadParts(first_element.document_id,
-                                first_element.workspace_id,
-                                first_element.tab_id,
-                                [element.id for element in elements],
-                                on_mesh_download_progress,
-                                on_mesh_downloaded,
-                                on_mesh_download_error)
+            elements = [item.element for item in items_group]
+
+            first_element = elements[0]
+            self._api.downloadParts(first_element.document_id,
+                                    first_element.workspace_id,
+                                    first_element.tab_id,
+                                    [element.id for element in elements],
+                                    functools.partial(OnshapeController._onMeshDownloadProgress, message),
+                                    functools.partial(self._onMeshDownloaded, message),
+                                    functools.partial(OnshapeController._onMeshDownloadError, message))
 
         self.partSelected.emit()
-
-    @pyqtSlot(DocumentsItem)
-    def addToBuildPlate(self, item):
-        self.addGroupToBuildPlate([item])

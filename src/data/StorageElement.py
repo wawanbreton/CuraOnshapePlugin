@@ -14,7 +14,8 @@ class StorageElement(BaseElement):
                  data: Dict[str, Any],
                  thumbnail_url: Optional[str] = None,
                  icon: Optional[str] = None,
-                 allow_single_child_shortcut: bool = False):
+                 allow_single_child_shortcut: bool = False,
+                 is_refreshable = True):
         super().__init__(data['name'],
                          data['id'],
                          data['owner']['name'],
@@ -22,6 +23,7 @@ class StorageElement(BaseElement):
                          data['modifiedBy']['name'],
                          thumbnail_url = thumbnail_url,
                          icon = icon,
-                         allow_single_child_shortcut = allow_single_child_shortcut)
+                         allow_single_child_shortcut = allow_single_child_shortcut,
+                         is_refreshable = is_refreshable)
 
         self.parent_id: str = data['parentId']

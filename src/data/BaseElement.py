@@ -26,7 +26,8 @@ class BaseElement:
                  icon: Optional[str] = None,
                  has_children: bool = True,
                  is_downloadable: bool = False,
-                 allow_single_child_shortcut: bool = False):
+                 allow_single_child_shortcut: bool = False,
+                 is_refreshable: bool = True):
         """
         Base constructor
 
@@ -56,6 +57,7 @@ class BaseElement:
         self.has_children: bool = has_children
         self.is_downloadable: bool = is_downloadable
         self._allow_single_child_shortcut: bool = allow_single_child_shortcut
+        self.is_refreshable: bool = is_refreshable
 
     def loadChildren(self,
                      api: 'OnshapeApi',

@@ -63,21 +63,10 @@ Window
                 }
             }
 
-            Item
+            DocumentsActions
             {
                 Layout.fillWidth: true
-                Layout.preferredHeight: buttonDownloadGroup.height + UM.Theme.getSize("default_margin").height * 2
-
-                Cura.PrimaryButton
-                {
-                    id: buttonDownloadGroup
-                    anchors.right: parent.right
-                    anchors.bottom: parent.bottom
-                    anchors.margins: UM.Theme.getSize("default_margin").height
-                    text: catalog.i18nc("@action:button", "Add group to build plate")
-                    enabled: documentsListStack.currentItem.documentsModel.selectedItems.length > 0
-                    onClicked: controller.addGroupToBuildPlate(documentsListStack.currentItem.documentsModel.selectedItems)
-                }
+                Layout.preferredHeight: UM.Theme.getSize("action_button").height + UM.Theme.getSize("default_margin").height * 2
             }
         }
     }

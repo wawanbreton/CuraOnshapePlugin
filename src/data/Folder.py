@@ -12,4 +12,5 @@ class Folder(StorageElement):
 
     def __init__(self, data: Dict[str, Any]):
         super().__init__(data,
-                         icon = QtApplication.getInstance().getTheme().getIcon('Folder', 'medium').toString())
+                         icon = QtApplication.getInstance().getTheme().getIcon('Folder', 'medium').toString(),
+                         is_refreshable = False)
