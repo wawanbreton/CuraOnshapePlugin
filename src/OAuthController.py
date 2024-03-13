@@ -59,6 +59,7 @@ class OAuthController(QObject):
         self._refresh_timer.timeout.connect(self._refreshTokenIfNeeded)
         self._refresh_timer.start(10000)
 
+        QtApplication.getInstance().callLater(self._loadAuthData)
 
     def login(self):
         self._authorization_service.startAuthorizationFlow()
@@ -74,3 +75,8 @@ class OAuthController(QObject):
     def _refreshTokenIfNeeded(self):
         # Just call getAccessToken, which will start a refresh if required
         self._authorization_service.getAccessToken()
+
+    def _loadAuthData(self):
+        self._authorization_service.loadAuthDataFromPreferences()
+        self._onAccessTokenChanged()
+
