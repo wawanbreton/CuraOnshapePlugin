@@ -34,8 +34,9 @@ class OnshapeController(QObject):
     partSelected = pyqtSignal()
 
     def setLoggedIn(self, logged_in):
-        self._logged_in = logged_in
-        self.loggedInChanged.emit()
+        if logged_in != self._logged_in:
+            self._logged_in = logged_in
+            self.loggedInChanged.emit()
 
     @pyqtProperty(bool, notify = loggedInChanged, fset = setLoggedIn)
     def loggedIn(self):

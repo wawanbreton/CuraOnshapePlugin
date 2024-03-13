@@ -3,7 +3,7 @@
 import os
 import json
 
-from PyQt6.QtCore import QObject, pyqtSlot, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
 
 from UM.Qt.QtApplication import QtApplication
 from UM.Logger import Logger
@@ -55,26 +55,22 @@ class OAuthController(QObject):
         self._authorization_service.onAuthenticationError.connect(self._onLoginStateChanged)
         self._authorization_service.accessTokenChanged.connect(self._onAccessTokenChanged)
 
+        self._refresh_timer = QTimer()
+        self._refresh_timer.timeout.connect(self._refreshTokenIfNeeded)
+        self._refresh_timer.start(10000)
+
+
     def login(self):
         self._authorization_service.startAuthorizationFlow()
 
     def _onLoginStateChanged(self, logged_in, error_message=None):
-        # if error_message:
-        #     if self._error_message:
-        #         self._error_message.hide()
-        #     Logger.log("w", "Failed to login: %s", error_message)
-        #     self._error_message = Message(error_message,
-        #                                   title = i18n_catalog.i18nc("@info:title", "Login failed"),
-        #                                   message_type = Message.MessageType.ERROR)
-        #     self._error_message.show()
-        #     self._logged_in = False
-        #     self.loginStateChanged.emit(False)
-        #     if self._update_timer.isActive():
-        #         self._update_timer.stop()
-        #     return
-
         if logged_in:
             QtApplication.getInstance().getMainWindow().requestActivate()
 
     def _onAccessTokenChanged(self):
         self.tokenChanged.emit(self._authorization_service.getAccessToken())
+
+    @pyqtSlot()
+    def _refreshTokenIfNeeded(self):
+        # Just call getAccessToken, which will start a refresh if required
+        self._authorization_service.getAccessToken()
