@@ -51,7 +51,17 @@ Item
                 UM.Label
                 {
                     text: modelData
+                    visible: modelData.length > 0
                     font: UM.Theme.getFont("large")
+                }
+
+                UM.ColorImage
+                {
+                    source: UM.Theme.getIcon("House")
+                    height: UM.Theme.getSize("large_button_icon").width
+                    width: height
+                    color: UM.Theme.getColor("text")
+                    visible: modelData.length === 0
                 }
 
                 UM.ColorImage
