@@ -24,22 +24,6 @@ Item
         anchors.margins: UM.Theme.getSize("default_margin").width
         spacing: 0
 
-        Cura.SecondaryButton
-        {
-            Layout.rightMargin: UM.Theme.getSize("default_margin").width
-            Layout.alignment: Qt.AlignVCenter
-            Layout.preferredHeight: UM.Theme.getSize("action_button").height
-            Layout.preferredWidth: height
-
-            enabled: !documentsModel.isRoot
-            onClicked: documentsListStack.pop()
-
-            leftPadding: UM.Theme.getSize("narrow_margin").width
-            rightPadding: leftPadding
-            iconSource: UM.Theme.getIcon("ArrowLeft")
-            iconSize: height - leftPadding * 2
-        }
-
         Repeater
         {
             model: documentsModel.path
@@ -53,6 +37,14 @@ Item
                     text: modelData
                     visible: modelData.length > 0
                     font: UM.Theme.getFont("large")
+
+                    MouseArea
+                    {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onContainsMouseChanged: parent.font.underline = containsMouse
+                        onClicked: popToIndex(index)
+                    }
                 }
 
                 UM.ColorImage
@@ -60,8 +52,16 @@ Item
                     source: UM.Theme.getIcon("House")
                     height: UM.Theme.getSize("large_button_icon").width
                     width: height
-                    color: UM.Theme.getColor("text")
+                    color: UM.Theme.getColor(imageMouseArea.containsMouse ? "text_link" : "text")
                     visible: modelData.length === 0
+
+                    MouseArea
+                    {
+                        id: imageMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        onClicked: popToIndex(index)
+                    }
                 }
 
                 UM.ColorImage
@@ -120,5 +120,10 @@ Item
                 modality: Qt.ApplicationModal
             }
         }
+    }
+
+    function popToIndex(index)
+    {
+        documentsListStack.pop(documentsListStack.get(index))
     }
 }
