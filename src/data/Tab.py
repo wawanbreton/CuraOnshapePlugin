@@ -1,8 +1,13 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import Dict, Any, Callable, List
+from typing import TYPE_CHECKING, Dict, Any, Callable, List
 
 from .BaseElement import BaseElement
+
+if TYPE_CHECKING:
+    from ..api.OnshapeApi import OnshapeApi
+    from .DocumentsTreeNode import DocumentsTreeNode
+    from PyQt6.QtNetwork import QNetworkReply
 
 
 class Tab(BaseElement):
@@ -18,5 +23,5 @@ class Tab(BaseElement):
     def _loadChildren(self,
                       api: 'OnshapeApi',
                       on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         api.listParts(self._document_id, self._workspace_id, self.id, on_finished, on_error)

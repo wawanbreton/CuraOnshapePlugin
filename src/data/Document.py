@@ -1,9 +1,13 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import Dict, Any, Callable, List
+from typing import TYPE_CHECKING, Dict, Any, Callable, List
 
 from .StorageElement import StorageElement
 
+if TYPE_CHECKING:
+    from ..api.OnshapeApi import OnshapeApi
+    from .DocumentsTreeNode import DocumentsTreeNode
+    from PyQt6.QtNetwork import QNetworkReply
 
 class Document(StorageElement):
     """Represents a document created by the user in his storage space"""
@@ -16,5 +20,5 @@ class Document(StorageElement):
     def _loadChildren(self,
                       api: 'OnshapeApi',
                       on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         api.listWorkspaces(self.id, on_finished, on_error)

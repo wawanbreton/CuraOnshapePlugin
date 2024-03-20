@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import Callable, List, Dict, Any
+from typing import TYPE_CHECKING, Callable, List, Dict, Any
 
 from datetime import datetime
 import os
@@ -10,8 +10,14 @@ from PyQt6.QtCore import QUrl
 
 from .BaseElement import BaseElement
 
+if TYPE_CHECKING:
+    from ..api.OnshapeApi import OnshapeApi
+    from .DocumentsTreeNode import DocumentsTreeNode
+    from PyQt6.QtNetwork import QNetworkReply
+
 
 class Workspace(BaseElement):
+    """Represents a document workspace, which is much like a git branch"""
 
     def __init__(self, data: Dict[str, Any]):
         dir = pathlib.Path(__file__).parent.resolve()

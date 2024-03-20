@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class AcceptBinaryDataScope(HttpRequestScope):
     """Simple HTTP scope adding a header to allow receiving binary data"""
 
-    def __init__(self, base: "HttpRequestScope"):
+    def __init__(self, base: 'HttpRequestScope'):
         super().__init__()
         self.base: HttpRequestScope = base
 

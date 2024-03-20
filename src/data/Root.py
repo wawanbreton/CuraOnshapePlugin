@@ -1,10 +1,13 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import Callable, List
-
-from UM.i18n import i18nCatalog
+from typing import TYPE_CHECKING, Callable, List
 
 from .BaseElement import BaseElement
+
+if TYPE_CHECKING:
+    from ..api.OnshapeApi import OnshapeApi
+    from .DocumentsTreeNode import DocumentsTreeNode
+    from PyQt6.QtNetwork import QNetworkReply
 
 
 class Root(BaseElement):
@@ -16,5 +19,5 @@ class Root(BaseElement):
     def _loadChildren(self,
                       api: 'OnshapeApi',
                       on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         api.listDocuments(on_finished, on_error)

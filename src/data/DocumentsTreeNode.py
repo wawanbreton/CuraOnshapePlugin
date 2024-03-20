@@ -18,19 +18,19 @@ class DocumentsTreeNode:
         self.children: List['DocumentsTreeNode'] = []
         self.children_loaded: bool = False
 
-    def addChild(self, node: 'DocumentsTreeNode'):
+    def addChild(self, node: 'DocumentsTreeNode') -> None:
         """Add a single child to the node, which can be called multiple times"""
         self.children.append(node)
         self.children_loaded = True
 
-    def setChildren(self, nodes: List['DocumentsTreeNode']):
+    def setChildren(self, nodes: List['DocumentsTreeNode']) -> None:
         """Adds all the children to the node at once, which is supposed to be called only once"""
         self.children = nodes
         self.children_loaded = True
 
-    def getId(self):
+    def getId(self) -> str:
         return self.element.id
 
-    def clear(self):
+    def clear(self) -> None:
         self.children_loaded = False
         self.children = []

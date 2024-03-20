@@ -62,7 +62,7 @@ class BaseElement:
     def loadChildren(self,
                      api: 'OnshapeApi',
                      on_finished: Callable[[List['DocumentsTreeNode']], None],
-                     on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                     on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Starts loading the children of the current object, and immediatly start loading the child
            in case there is a single one and we allow for shortcutting"""
         def shortcut_callback(children: List['DocumentsTreeNode']):
@@ -76,15 +76,15 @@ class BaseElement:
     def _loadChildren(self,
                       api: 'OnshapeApi',
                       on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Method to be overridden by child classes to actually start loading the children"""
         return NotImplementedError(f'Children of {self.__class__} are not to be loaded')
 
-    def hasThumbnail(self):
+    def hasThumbnail(self) -> bool:
         return self.thumbnail_url is not None
 
     @staticmethod
-    def _findThumbnailUrl(thumbnail_sizes: List[Dict[str, Any]]):
+    def _findThumbnailUrl(thumbnail_sizes: List[Dict[str, Any]]) -> Optional[str]:
         """
         Tries to find the most appropriate thumbnail, i.e. the one that is the biggest
         and  also a square

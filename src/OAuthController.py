@@ -1,26 +1,31 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
+from typing import TYPE_CHECKING, Optional
+
 import os
 import json
 
 from PyQt6.QtCore import QObject, pyqtSlot, pyqtSignal, QTimer
 
 from UM.Qt.QtApplication import QtApplication
-from UM.Logger import Logger
 from cura.OAuth2.AuthorizationService import AuthorizationService
 from cura.OAuth2.Models import OAuth2Settings
 
+if TYPE_CHECKING:
+    from cura.CuraApplication import CuraApplication
+
 
 class OAuthController(QObject):
+    """Controller in charge of the OAuth authentication to the Onshape remote API"""
 
     ROOT_AUTH_URL = 'https://oauth.onshape.com/oauth'
 
     tokenChanged = pyqtSignal(str)
 
-    def __init__(self, application):
+    def __init__(self, application: "CuraApplication"):
         super().__init__()
 
-        self._application = application
+        self._application: "CuraApplication" = application
 
         secrets_file_path = os.path.join(os.path.dirname(__file__), '..', 'resources', 'auth.json')
         with open(secrets_file_path, "rb") as secrets_file:
@@ -49,34 +54,34 @@ class OAuthController(QObject):
                     AUTH_FAILED_REDIRECT='https://cad.onshape.com'
                 )
 
-        self._authorization_service = AuthorizationService(oauth_settings, get_user_profile=False)
+        self._authorization_service: AuthorizationService = AuthorizationService(oauth_settings, get_user_profile=False)
         self._authorization_service.initialize(self._application.getPreferences())
         self._authorization_service.onAuthStateChanged.connect(self._onLoginStateChanged)
         self._authorization_service.onAuthenticationError.connect(self._onLoginStateChanged)
         self._authorization_service.accessTokenChanged.connect(self._onAccessTokenChanged)
 
-        self._refresh_timer = QTimer()
+        self._refresh_timer: QTimer = QTimer()
         self._refresh_timer.timeout.connect(self._refreshTokenIfNeeded)
         self._refresh_timer.start(10000)
 
         QtApplication.getInstance().callLater(self._loadAuthData)
 
-    def login(self):
+    def login(self) -> None:
         self._authorization_service.startAuthorizationFlow()
 
-    def _onLoginStateChanged(self, logged_in, error_message=None):
+    def _onLoginStateChanged(self, logged_in: bool, error_message: Optional[str] = None):
         if logged_in:
             QtApplication.getInstance().getMainWindow().requestActivate()
 
-    def _onAccessTokenChanged(self):
+    def _onAccessTokenChanged(self) -> None:
         self.tokenChanged.emit(self._authorization_service.getAccessToken())
 
     @pyqtSlot()
-    def _refreshTokenIfNeeded(self):
+    def _refreshTokenIfNeeded(self) -> None:
         # Just call getAccessToken, which will start a refresh if required
         self._authorization_service.getAccessToken()
 
-    def _loadAuthData(self):
+    def _loadAuthData(self) -> None:
         self._authorization_service.loadAuthDataFromPreferences()
         self._onAccessTokenChanged()
 

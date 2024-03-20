@@ -40,14 +40,14 @@ class OnshapeApi(QObject):
         self._binary_scope: 'AcceptBinaryDataScope' = AcceptBinaryDataScope(self._auth_scope)
 
     @pyqtSlot(str)
-    def setToken(self, token: str):
+    def setToken(self, token: str) -> None:
         """Sets the authentication token, which is required to make API calls"""
         self._auth_scope.setToken(token)
 
     def _getFolders(self,
                     on_finished: Callable[[List['DocumentsTreeNode']], None],
                     on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
-                    storage: 'UserStorage'):
+                    storage: 'UserStorage') -> None:
         """
         Retrieves the next required folder content, which is done recursively and dynamically
         because we don't know in advance which subfolders are existing and non-empty.
@@ -75,7 +75,7 @@ class OnshapeApi(QObject):
                        on_finished: Callable[[List['DocumentsTreeNode']], None],
                        on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
                        storage: 'UserStorage',
-                       offset: int):
+                       offset: int) -> None:
         """
         Retrieves the list of root documents in the user storage. This is done multiple times
         because each call retrieves a sublist of the total, hence the given offset. Once the
@@ -108,7 +108,7 @@ class OnshapeApi(QObject):
 
     def listDocuments(self,
                       on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Lists the root documents and the whole folder tree present in the user storage"""
         storage = UserStorage()
         self._listDocuments(on_finished, on_error, storage, 0)
@@ -116,7 +116,7 @@ class OnshapeApi(QObject):
     def listWorkspaces(self,
                        document_id: str,
                        on_finished: Callable[[List['DocumentsTreeNode']], None],
-                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Lists the available workspaces in the given document"""
         def response_received(reply: 'QNetworkReply'):
             data_json = json.loads(bytes(reply.readAll()).decode())
@@ -139,7 +139,7 @@ class OnshapeApi(QObject):
                  document_id: str,
                  workspace_id: str,
                  on_finished: Callable[[List['DocumentsTreeNode']], None],
-                 on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                 on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Lists the available tabs (sub-documents) in the given document"""
         def response_received(reply: 'QNetworkReply'):
             tabs = []
@@ -168,7 +168,7 @@ class OnshapeApi(QObject):
                   workspace_id: str,
                   tab_id: str,
                   on_finished: Callable[[List['DocumentsTreeNode']], None],
-                  on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                  on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Lists the available parts in the given tab"""
         def response_received(reply: 'QNetworkReply'):
             parts = []
@@ -195,7 +195,7 @@ class OnshapeApi(QObject):
     def loadThumbnail(self,
                       thumbnail_url: str,
                       on_finished: Callable[['QByteArray'], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Loads the thumbnail image, to be found at the given URL"""
         def response_received(reply: 'QNetworkReply'):
             on_finished(reply.readAll())
@@ -213,7 +213,7 @@ class OnshapeApi(QObject):
                       parts_ids: List[str],
                       on_progress: Callable[[int, int], None],
                       on_finished: Callable[[str], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """
         Downloads the given part(s) as STL data into a local file.
         The finished callback receives the path of the created local file.

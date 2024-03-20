@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import List
+from typing import List, Optional, Dict, Any
 
 from .Document import Document
 from .Folder import Folder
@@ -16,17 +16,17 @@ class UserStorage:
     """
 
     def __init__(self):
-        self.documents: List['Document'] = []
-        self.folders: List['Folder'] = []
+        self.documents: List[Document] = []
+        self.folders: List[Folder] = []
 
-    def appendDocuments(self, documents_data):
+    def appendDocuments(self, documents_data: List[Dict[str, Any]]) -> None:
         for document_data in documents_data:
             self.documents.append(Document(document_data))
 
-    def appendFolder(self, folder_data):
+    def appendFolder(self, folder_data: Dict[str, Any]) -> None:
         self.folders.append(Folder(folder_data))
 
-    def getNextFolderToRetrieve(self):
+    def getNextFolderToRetrieve(self) -> Optional[Folder]:
         folders = set()
 
         for element in self.documents + self.folders:
@@ -43,7 +43,7 @@ class UserStorage:
             return None
 
     @staticmethod
-    def _findParent(node, parent_id):
+    def _findParent(node: DocumentsTreeNode, parent_id: str) -> Optional[DocumentsTreeNode]:
         if node.getId() == parent_id:
             return node
 
@@ -54,7 +54,7 @@ class UserStorage:
 
         return None
 
-    def getTree(self):
+    def getTree(self) -> DocumentsTreeNode:
         root = DocumentsTreeNode(Root())
 
         elements = self.folders + self.documents
