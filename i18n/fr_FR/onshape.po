@@ -1,29 +1,45 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (c) 2023 Erwan MATHIEU
-# This file is distributed under the same license as the OctoPrint Connection Plugin package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Copyright (c) 2024 Erwan MATHIEU
+# This file is distributed under the same license as the Onshape Cura Plugin.
+# FIRST AUTHOR Erwan MATHIEU <wawanbreton@gmail.com>, 2024.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Onshape Import Plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-13 13:43+0000\n"
+"POT-Creation-Date: 2024-03-21 21:23+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Last-Translator: Erwan MATHIEU <wawanbreton@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgctxt "@title:window"
-msgid "Open model from Onshape"
-msgstr "Ouvrir un modèle depuis Onshape"
+msgctxt "@menu"
+msgid "From Onshape"
+msgstr "À partir d'Onshape"
+
+msgctxt "@label"
+msgid "Last updated: %1"
+msgstr "Denière modification : %1"
+
+msgctxt "@label"
+msgid " by %1"
+msgstr " par %1"
 
 msgctxt "@action:button"
-msgid "Add group to build plate"
-msgstr "Ajouter le groupe sur le plateau"
+msgid "Add to selection"
+msgstr "Ajouter à la sélection"
+
+msgctxt "@label"
+msgid "Loading ..."
+msgstr "Chargement ..."
+
+msgctxt "@title:window"
+msgid "Onshape settings"
+msgstr "Paramètres Onshape"
 
 msgctxt "@label"
 msgid "Tesselation resolution"
@@ -41,42 +57,30 @@ msgctxt "@label"
 msgid "Fine"
 msgstr "Fin"
 
+msgctxt "@label"
+msgid "Request error: %1"
+msgstr "Erreur de la requête : %1"
+
 msgctxt "@title:window"
-msgid "Onshape settings"
-msgstr "Paramètres Onshape"
+msgid "Open model from Onshape"
+msgstr "Ouvrir un modèle depuis Onshape"
 
 msgctxt "@label"
 msgid "Sign in to your Onshape account to access your documents"
 msgstr "Connectez-vous à votre compte Onshape pour accéder à vos documents"
 
-msgctxt "@label"
-msgid "Last updated: %1"
-msgstr "Denière modification : %1"
-
-msgctxt "@label"
-msgid " by %1"
-msgstr " par %1"
-
-msgctxt "@action:button"
-msgid "Add to group"
-msgstr "Ajouter au groupe"
-
-msgctxt "@action:button"
-msgid "Remove from group"
-msgstr "Retirer du groupe"
+msgctxt "@button"
+msgid "Sign in"
+msgstr "Connection"
 
 msgctxt "@action:button"
 msgid "Add to build plate"
 msgstr "Ajouter sur le plateau"
 
-msgctxt "@label"
-msgid "Request error: %1"
-msgstr "Erreur de la requête : %1"
+msgctxt "@action:button"
+msgid "Add and merge parts"
+msgstr "Ajouter et fusionner les pièces"
 
-msgctxt "@label"
-msgid "Loading ..."
-msgstr "Chargement ..."
-
-msgctxt "@label"
-msgid "My documents"
-msgstr "Mes documents"
+msgctxt "@action:button"
+msgid "Refresh"
+msgstr "Rafraîchir"

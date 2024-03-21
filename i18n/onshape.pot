@@ -1,28 +1,44 @@
-# Onshape Cura plugin translation file.
-# Copyright (c) 2023 Erwan MATHIEU
-# This file is distributed under the same license as the Onshape Cura Plugin package.
-# FIRST AUTHOR <wawanbreton@gmail.com>, 2024.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Onshape Import Plugin\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-13 13:43+0000\n"
+"POT-Creation-Date: 2024-03-21 21:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Erwan MATHIEU <wawanbreton@gmail.com>\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgctxt "@title:window"
-msgid "Open model from Onshape"
+msgctxt "@menu"
+msgid "From Onshape"
+msgstr ""
+
+msgctxt "@label"
+msgid "Last updated: %1"
+msgstr ""
+
+msgctxt "@label"
+msgid " by %1"
 msgstr ""
 
 msgctxt "@action:button"
-msgid "Add group to build plate"
+msgid "Add to selection"
+msgstr ""
+
+msgctxt "@label"
+msgid "Loading ..."
+msgstr ""
+
+msgctxt "@title:window"
+msgid "Onshape settings"
 msgstr ""
 
 msgctxt "@label"
@@ -41,42 +57,30 @@ msgctxt "@label"
 msgid "Fine"
 msgstr ""
 
+msgctxt "@label"
+msgid "Request error: %1"
+msgstr ""
+
 msgctxt "@title:window"
-msgid "Onshape settings"
+msgid "Open model from Onshape"
 msgstr ""
 
 msgctxt "@label"
 msgid "Sign in to your Onshape account to access your documents"
 msgstr ""
 
-msgctxt "@label"
-msgid "Last updated: %1"
-msgstr ""
-
-msgctxt "@label"
-msgid " by %1"
-msgstr ""
-
-msgctxt "@action:button"
-msgid "Add to group"
-msgstr ""
-
-msgctxt "@action:button"
-msgid "Remove from group"
+msgctxt "@button"
+msgid "Sign in"
 msgstr ""
 
 msgctxt "@action:button"
 msgid "Add to build plate"
 msgstr ""
 
-msgctxt "@label"
-msgid "Request error: %1"
+msgctxt "@action:button"
+msgid "Add and merge parts"
 msgstr ""
 
-msgctxt "@label"
-msgid "Loading ..."
-msgstr ""
-
-msgctxt "@label"
-msgid "My documents"
+msgctxt "@action:button"
+msgid "Refresh"
 msgstr ""
