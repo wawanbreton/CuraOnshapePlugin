@@ -29,14 +29,14 @@ jobs:
       - name: Insert decryption key
         run: sed -i 's/__ENCRYPTION_KEY__/${{ secrets.ENCRYPTION_KEY }}/g' src/OAuthController.py
 
-      - name: Upload the authentication file
-        uses: actions/upload-artifact@v3
-        with:
-          name: auth.json
-          path: auth.json
-          retention-days: 10
-
       - uses: fieldOfView/cura-plugin-packager-action@main
         with:
           source_folder: "."
           package_info_path: ".github/workflows/package.json"
+
+      - name: Upload built package
+        uses: actions/upload-artifact@v3
+        with:
+          name: Package
+          path: *.curapackage
+          retention-days: 10
