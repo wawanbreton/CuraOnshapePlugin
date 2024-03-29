@@ -38,5 +38,5 @@ jobs:
 
       - uses: fieldOfView/cura-plugin-packager-action@main
         with:
-          source_folder: "build"
-          package_info_path: "build/.github/workflows/package.json"
+          source_folder: "."
+          package_info_path: ".github/workflows/package.json"
