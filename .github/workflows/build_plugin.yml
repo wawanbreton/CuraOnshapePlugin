@@ -35,3 +35,8 @@ jobs:
           name: auth.json
           path: auth.json
           retention-days: 10
+
+      - uses: fieldOfView/cura-plugin-packager-action@main
+        with:
+          source_folder: "build"
+          package_info_path: "build/.github/workflows/package.json"

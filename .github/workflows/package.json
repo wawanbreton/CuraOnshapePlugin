@@ -1,0 +1,15 @@
+{
+    "author": {
+        "author_id": "wawanbreton",
+        "display_name": "wawanbreton",
+        "email": "wawanbreton@gmail.com"
+    },
+    "description": "Connects to Onshape to allow direct downloading of parts to prepare them for 3D printing",
+    "display_name": "Onshape",
+    "package_id": "CuraOnshapePlugin",
+    "package_type": "plugin",
+    "package_version": "0.0.0",
+    "sdk_version": 0,
+    "sdk_version_semver": "0.0.0",
+    "website": "https://github.com/wawanbreton/CuraOnshapePlugin"
+}
