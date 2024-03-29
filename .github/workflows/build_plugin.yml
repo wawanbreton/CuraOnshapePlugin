@@ -29,6 +29,9 @@ jobs:
       - name: Insert decryption key
         run: sed -i 's/__ENCRYPTION_KEY__/${{ secrets.ENCRYPTION_KEY }}/g' src/OAuthController.py
 
+      - name: Generate languages binaries
+        run: make_translations_binaries.sh
+
       - uses: fieldOfView/cura-plugin-packager-action@main
         with:
           source_folder: "."
