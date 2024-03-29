@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, List, Optional
 
 from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtNetwork import QNetworkRequest
 
 from ..data.Root import Root
 
@@ -72,7 +73,7 @@ class DocumentsModel(QObject):
             self._updateItems()
 
         def on_error(request: "QNetworkReply", error: "QNetworkReply.NetworkError"):
-            self._load_error = request.errorString()
+            self._load_error = request.errorString() + bytes(request.readAll()).decode()
             self.errorChanged.emit()
 
         for item in self._items:
@@ -85,13 +86,17 @@ class DocumentsModel(QObject):
     def refreshable(self) -> bool:
         return self._node.element.is_refreshable
 
-    @pyqtSlot()
-    def refresh(self) -> None:
+    def clear(self) -> None:
         self._items = []
         self._node.clear()
-
         self.elementsChanged.emit()
 
+        self._load_error = None
+        self.errorChanged.emit()
+
+    @pyqtSlot()
+    def refresh(self) -> None:
+        self.clear()
         self.load()
 
     selectedItemsChanged = pyqtSignal()

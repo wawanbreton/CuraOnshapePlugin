@@ -83,5 +83,6 @@ class OAuthController(QObject):
 
     def _loadAuthData(self) -> None:
         self._authorization_service.loadAuthDataFromPreferences()
-        self._onAccessTokenChanged()
+        if self._authorization_service.getAccessToken() is not None:
+            self._onAccessTokenChanged()
 

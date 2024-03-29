@@ -5,6 +5,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 2.3
 import QtQuick.Layouts 1.15
 
+import Cura 1.5 as Cura
 import UM 1.5 as UM
 
 
@@ -35,6 +36,16 @@ Item
             font: UM.Theme.getFont("large_bold")
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
+        }
+
+        Cura.PrimaryButton
+        {
+            text: catalog.i18nc("@button", "Sign in again")
+            Layout.alignment: Qt.AlignHCenter
+            Layout.preferredWidth: UM.Theme.getSize("account_button").width
+            Layout.preferredHeight: UM.Theme.getSize("account_button").height
+            fixedWidthMode: true
+            onClicked: controller.login()
         }
     }
 }

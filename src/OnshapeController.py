@@ -55,6 +55,11 @@ class OnshapeController(QObject):
 
     @pyqtSlot()
     def login(self) -> None:
+        self._logged_in = False
+        self.loggedInChanged.emit()
+
+        self._documents_model.clear()
+
         self._auth_controller.login()
 
     def _onFileLoaded(self, file_path: str) -> None:
