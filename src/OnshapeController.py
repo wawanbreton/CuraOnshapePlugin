@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Dict
 
 import os
 import math
@@ -34,8 +34,10 @@ class OnshapeController(QObject):
         self._logged_in: bool = False
         self._documents_model: DocumentsModel = DocumentsModel(DocumentsTreeNode(Root()), self._api, [])
         self._temp_files: List[str] = []
+        self._parts_names: Dict[str, str] = {}
 
         CuraApplication.getInstance().fileLoaded.connect(self._onFileLoaded)
+        CuraApplication.getInstance().getController().getScene().sceneChanged.connect(self._onSceneChanged)
 
     loggedInChanged = pyqtSignal()
 
@@ -69,13 +71,27 @@ class OnshapeController(QObject):
             self._temp_files.remove(file_path)
             print("File removed ", file_path)
 
+    def _onSceneChanged(self, *args) -> None:
+        for changed_node in args:
+            if changed_node.callDecoration("isSliceable"):
+                actual_name = changed_node.getName()
+                if actual_name in self._parts_names:
+                    changed_node.setName(self._parts_names[actual_name])
+                    self._parts_names.remove(actual_name)
+
     @staticmethod
     def _onMeshDownloadProgress(message: Message, transmitted: int, total: int) -> None:
         message.setProgress(math.floor(transmitted * 100.0 / total))
 
-    def _onMeshDownloaded(self, message: Message, file_path: str):
+    def _onMeshDownloaded(self, message: Message, part_name: str, file_path: str):
         message.hide()
+
+        # Save file name to delete the temp file once it has been loaded
         self._temp_files.append(file_path)
+
+        # Save part name to set it once the scene node has been created
+        self._parts_names[os.path.basename(file_path)] = part_name
+
         CuraApplication.getInstance().readLocalFile(QUrl.fromLocalFile(file_path), add_to_recent_files = False)
 
     @staticmethod
@@ -111,7 +127,7 @@ class OnshapeController(QObject):
                                     first_element.tab_id,
                                     [element.id for element in elements],
                                     functools.partial(OnshapeController._onMeshDownloadProgress, message),
-                                    functools.partial(self._onMeshDownloaded, message),
+                                    functools.partial(self._onMeshDownloaded, message, first_element.name),
                                     functools.partial(OnshapeController._onMeshDownloadError, message))
 
             print_information = CuraApplication.getInstance().getPrintInformation()
