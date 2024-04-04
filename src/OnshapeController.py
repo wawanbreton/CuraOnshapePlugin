@@ -9,6 +9,7 @@ import functools
 from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot, pyqtProperty, QUrl
 
 from cura.CuraApplication import CuraApplication
+from cura.UI.PrintInformation import PrintInformation
 from UM.Message import Message
 
 from .model.DocumentsModel import DocumentsModel
@@ -112,5 +113,9 @@ class OnshapeController(QObject):
                                     functools.partial(OnshapeController._onMeshDownloadProgress, message),
                                     functools.partial(self._onMeshDownloaded, message),
                                     functools.partial(OnshapeController._onMeshDownloadError, message))
+
+            print_information = CuraApplication.getInstance().getPrintInformation()
+            if len(print_information.jobName) == 0 or print_information.jobName == PrintInformation.UNTITLED_JOB_NAME:
+                print_information.setJobName(items_group[0].getPath()[-1], True)
 
         self.partSelected.emit()

@@ -28,6 +28,7 @@ class DocumentsItem(QObject):
         self._thumbnail_str_data: Optional[str] = None
         self._thumbnail_downloaded: bool = False
         self._selected: bool = False
+        self._path: List[str] = path
 
     @pyqtProperty(str, constant = True)
     def name(self) -> str:
@@ -102,3 +103,6 @@ class DocumentsItem(QObject):
     @pyqtProperty(bool, notify = selectedChanged, fset = setSelected)
     def selected(self) -> bool:
         return self._selected
+
+    def getPath(self) -> List[str]:
+        return self._path
