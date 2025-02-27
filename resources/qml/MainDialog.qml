@@ -18,6 +18,7 @@ Window
     height: 768 * screenScaleFactor
     minimumWidth: 800 * screenScaleFactor
     minimumHeight: 600 * screenScaleFactor
+    color: UM.Theme.getColor("main_background")
 
     UM.I18nCatalog{id: catalog; name:"onshape"}
 
@@ -26,7 +27,6 @@ Window
         sequence: "Esc"
         onActivated: root.close()
     }
-    color: UM.Theme.getColor("main_background")
 
     ConnectionItem
     {
@@ -49,6 +49,11 @@ Window
             {
                 Layout.fillWidth: true
                 documentsModel: documentsListStack.currentItem.documentsModel
+            }
+
+            SearchBar
+            {
+                Layout.fillWidth: true
             }
 
             StackView
