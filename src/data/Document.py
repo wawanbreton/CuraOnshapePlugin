@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import TYPE_CHECKING, Dict, Any, Callable, List
+from typing import TYPE_CHECKING, Dict, Any, Callable, List, Optional
 
 from .StorageElement import StorageElement
 
@@ -19,6 +19,7 @@ class Document(StorageElement):
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
+                      configuration: Optional[str],
                       on_finished: Callable[[List['DocumentsTreeNode']], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         api.listWorkspaces(self.id, on_finished, on_error)

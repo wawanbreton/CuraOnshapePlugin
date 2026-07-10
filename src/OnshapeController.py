@@ -126,6 +126,7 @@ class OnshapeController(QObject):
                                     first_element.workspace_id,
                                     first_element.tab_id,
                                     [element.id for element in elements],
+                                    first_element.configuration,
                                     functools.partial(OnshapeController._onMeshDownloadProgress, message),
                                     functools.partial(self._onMeshDownloaded, message, first_element.name),
                                     functools.partial(OnshapeController._onMeshDownloadError, message))

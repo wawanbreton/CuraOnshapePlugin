@@ -5,7 +5,7 @@ import tempfile
 
 from PyQt6.QtCore import QObject, pyqtSlot, QUrlQuery, QUrl
 
-from typing import Callable, List, TYPE_CHECKING
+from typing import Callable, List, Optional, TYPE_CHECKING
 
 from UM.Application import Application
 from UM.TaskManagement.HttpRequestManager import HttpRequestManager
@@ -167,6 +167,7 @@ class OnshapeApi(QObject):
                   document_id: str,
                   workspace_id: str,
                   tab_id: str,
+                  configuration: Optional[str],
                   on_finished: Callable[[List['DocumentsTreeNode']], None],
                   on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Lists the available parts in the given tab"""
@@ -175,7 +176,7 @@ class OnshapeApi(QObject):
             data_json = json.loads(bytes(reply.readAll()).decode())
 
             for part_data in data_json:
-                parts.append(DocumentsTreeNode(Part(part_data, document_id, workspace_id, tab_id)))
+                parts.append(DocumentsTreeNode(Part(part_data, document_id, workspace_id, tab_id, configuration)))
 
             on_finished(parts)
 
@@ -184,7 +185,27 @@ class OnshapeApi(QObject):
         query = QUrlQuery()
         query.addQueryItem('withThumbnails', 'true')
         query.addQueryItem('includeFlatParts', 'false')
+        if configuration is not None and len(configuration) > 0:
+            query.addQueryItem('configuration', configuration)
         url.setQuery(query)
+
+        self._http.get(url,
+                       scope = self._json_scope,
+                       callback = response_received,
+                       error_callback = on_error,
+                       timeout = self.DEFAULT_REQUEST_TIMEOUT)
+
+    def getConfiguration(self,
+                         document_id: str,
+                         workspace_id: str,
+                         tab_id: str,
+                         on_finished: Callable[[dict], None],
+                         on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        """Retrieves the configuration metadata for the given tab"""
+        def response_received(reply: 'QNetworkReply'):
+            on_finished(json.loads(bytes(reply.readAll()).decode()))
+
+        url = f'{self.API_ROOT}/elements/d/{document_id}/w/{workspace_id}/e/{tab_id}/configuration'
 
         self._http.get(url,
                        scope = self._json_scope,
@@ -211,6 +232,7 @@ class OnshapeApi(QObject):
                       workspace_id: str,
                       tab_id: str,
                       parts_ids: List[str],
+                      configuration: Optional[str],
                       on_progress: Callable[[int, int], None],
                       on_finished: Callable[[str], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
@@ -231,6 +253,8 @@ class OnshapeApi(QObject):
         query.addQueryItem('partIds', ','.join(parts_ids))
         query.addQueryItem('units', 'millimeter')
         query.addQueryItem('mode', 'binary')
+        if configuration is not None and len(configuration) > 0:
+            query.addQueryItem('configuration', configuration)
 
         resolution = Application.getInstance().getPreferences().getValue('plugin_onshape/tesselation_resolution')
         if resolution == 'coarse':

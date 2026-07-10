@@ -19,12 +19,13 @@ if TYPE_CHECKING:
 class DocumentsItem(QObject):
     """Represents an item in the documents tree to be displayed and interacted with on the UI"""
 
-    def __init__(self, node: "DocumentsTreeNode", api: "OnshapeApi", path: List[str]):
+    def __init__(self, node: "DocumentsTreeNode", api: "OnshapeApi", path: List[str], parent_model: "DocumentsModel"):
         super().__init__(parent = None)
         self._node: "DocumentsTreeNode" = node
         self._api: "OnshapeApi" = api
         self.element: "BaseElement" = self._node.element
         self._subModel: DocumentsModel = DocumentsModel(self._node, self._api, path)
+        self._parent_model: DocumentsModel = parent_model
         self._thumbnail_str_data: Optional[str] = None
         self._thumbnail_downloaded: bool = False
         self._selected: bool = False
@@ -71,6 +72,14 @@ class DocumentsItem(QObject):
     @pyqtProperty(bool, constant = True)
     def isDownloadable(self) -> bool:
         return self.element.is_downloadable
+
+    @pyqtProperty(bool, constant = True)
+    def hasConfigurationParameters(self) -> bool:
+        return self.isDownloadable and self._parent_model.hasConfigurationParameters
+
+    @pyqtProperty(list, constant = True)
+    def configurationParameters(self) -> list:
+        return self._parent_model.configurationParameters
 
     @pyqtProperty(str, constant = True)
     def shortDesc(self) -> str:

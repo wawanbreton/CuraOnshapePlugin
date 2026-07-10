@@ -61,24 +61,37 @@ class BaseElement:
 
     def loadChildren(self,
                      api: 'OnshapeApi',
+                     configuration: Optional[str],
                      on_finished: Callable[[List['DocumentsTreeNode']], None],
                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Starts loading the children of the current object, and immediatly start loading the child
            in case there is a single one and we allow for shortcutting"""
         def shortcut_callback(children: List['DocumentsTreeNode']):
-            if len(children) == 1:
-                children[0].element.loadChildren(api, on_finished, on_error)
+            if len(children) == 1 and not children[0].element.supports_configuration:
+                children[0].element.loadChildren(api, configuration, on_finished, on_error)
             else:
                 on_finished(children)
 
-        self._loadChildren(api, shortcut_callback if self._allow_single_child_shortcut else on_finished, on_error)
+        self._loadChildren(api, configuration, shortcut_callback if self._allow_single_child_shortcut else on_finished, on_error)
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
+                      configuration: Optional[str],
                       on_finished: Callable[[List['DocumentsTreeNode']], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Method to be overridden by child classes to actually start loading the children"""
         return NotImplementedError(f'Children of {self.__class__} are not to be loaded')
+
+    @property
+    def supports_configuration(self) -> bool:
+        return False
+
+    def loadConfiguration(self,
+                          api: 'OnshapeApi',
+                          on_finished: Callable[[Dict[str, Any]], None],
+                          on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        """Method to be overridden by child classes that support Onshape configurations"""
+        on_finished({})
 
     def hasThumbnail(self) -> bool:
         return self.thumbnail_url is not None
