@@ -50,8 +50,8 @@ Item
             footer: LoadingItem
             {
                 width: listView.width
-                height: documentsModel.isLoadingNextPage ? UM.Theme.getSize("card_icon").height * root.iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height : 0
-                visible: documentsModel.isLoadingNextPage
+                height: UM.Theme.getSize("card_icon").height * root.iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height
+                visible: documentsModel.hasMorePages || documentsModel.isLoadingNextPage
             }
 
             delegate: DocumentCard { }
