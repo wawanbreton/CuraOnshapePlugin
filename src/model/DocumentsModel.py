@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, List, Optional
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject
+from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QAbstractListModel, QModelIndex, Qt
 from PyQt6.QtNetwork import QNetworkRequest
 
 from ..data.Root import Root
@@ -14,8 +14,10 @@ if TYPE_CHECKING:
     from ..DocumentsItem import DocumentsItem
 
 
-class DocumentsModel(QObject):
+class DocumentsModel(QAbstractListModel):
     """Data model containing multiple DocumentsItem instances, to be displayed on the UI"""
+
+    ModelDataRole = Qt.ItemDataRole.UserRole
 
     def __init__(self, node: "DocumentsTreeNode", api: "OnshapeApi", path: List[str]):
         super().__init__(parent = None)
@@ -31,20 +33,37 @@ class DocumentsModel(QObject):
         if self.loaded:
             self._updateItems()
 
+    # ── QAbstractListModel interface ─────────────────────────────────────────
+
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        if parent.isValid():
+            return 0
+        return len(self._items)
+
+    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole):
+        if not index.isValid() or index.row() >= len(self._items):
+            return None
+        if role == self.ModelDataRole:
+            return self._items[index.row()]
+        return None
+
+    def roleNames(self) -> dict:
+        return {self.ModelDataRole: b'modelData'}
+
+    # ── Path property ─────────────────────────────────────────────────────────
+
     @pyqtProperty(list, constant = True)
     def path(self) -> List[str]:
         return self._path
 
-    elementsChanged = pyqtSignal()
-
-    @pyqtProperty(list, notify = elementsChanged)
-    def elements(self) -> List["DocumentsItem"]:
-        return self._items
+    # ── Internal item management ──────────────────────────────────────────────
 
     def _updateItems(self) -> None:
+        """Replaces the entire item list (used for the initial load and clear)."""
         from .DocumentsItem import DocumentsItem
+        self.beginResetModel()
         self._items = [DocumentsItem(child, self._api, self._path) for child in self._node.children]
-        self.elementsChanged.emit()
+        self.endResetModel()
 
         for item in self._items:
             item.selectedChanged.connect(self.selectedItemsChanged)
@@ -52,23 +71,33 @@ class DocumentsModel(QObject):
         self.selectedItemsChanged.emit()
 
     def _appendItems(self, new_children: List["DocumentsTreeNode"]) -> None:
+        """Appends new items at the end of the list without resetting the view."""
         from .DocumentsItem import DocumentsItem
+        first = len(self._items)
         new_items = [DocumentsItem(child, self._api, self._path) for child in new_children]
+
+        self.beginInsertRows(QModelIndex(), first, first + len(new_items) - 1)
         self._items.extend(new_items)
-        self.elementsChanged.emit()
+        self.endInsertRows()
 
         for item in new_items:
             item.selectedChanged.connect(self.selectedItemsChanged)
 
         self.selectedItemsChanged.emit()
 
-    @pyqtProperty(bool, notify = elementsChanged)
+    # ── Loaded / root state ───────────────────────────────────────────────────
+
+    loadedChanged = pyqtSignal()
+
+    @pyqtProperty(bool, notify = loadedChanged)
     def loaded(self) -> bool:
         return self._node.children_loaded
 
     @pyqtProperty(bool, constant = True)
     def isRoot(self) -> bool:
         return isinstance(self._node.element, Root)
+
+    # ── Error state ───────────────────────────────────────────────────────────
 
     errorChanged = pyqtSignal()
 
@@ -79,6 +108,8 @@ class DocumentsModel(QObject):
     @pyqtProperty(str, notify = errorChanged)
     def error(self) -> Optional[str]:
         return self._load_error
+
+    # ── Pagination state ──────────────────────────────────────────────────────
 
     hasMorePagesChanged = pyqtSignal()
 
@@ -102,15 +133,19 @@ class DocumentsModel(QObject):
             self._is_loading_next_page = value
             self.isLoadingNextPageChanged.emit()
 
+    # ── Load / next-page / refresh ────────────────────────────────────────────
+
     @pyqtSlot()
     def load(self) -> None:
         def on_finished(children: List["DocumentsTreeNode"]):
             self._node.setChildren(children)
+            self.loadedChanged.emit()
             self._updateItems()
 
         def on_finished_paged(children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
             self._node.setChildren(children)
             self._next_page_offset = document_count
+            self.loadedChanged.emit()
             self._setHasMorePages(has_more)
             self._updateItems()
 
@@ -156,15 +191,18 @@ class DocumentsModel(QObject):
         return self._node.element.is_refreshable
 
     def clear(self) -> None:
+        self.beginResetModel()
         self._items = []
         self._node.clear()
         self._next_page_offset = 0
-        self.elementsChanged.emit()
+        self.endResetModel()
+
         self._setHasMorePages(False)
         self._setIsLoadingNextPage(False)
 
         self._load_error = None
         self.errorChanged.emit()
+        self.loadedChanged.emit()
 
         if isinstance(self._node.element, Root):
             self._api.clearFolderCache()
@@ -173,6 +211,8 @@ class DocumentsModel(QObject):
     def refresh(self) -> None:
         self.clear()
         self.load()
+
+    # ── Selected items ────────────────────────────────────────────────────────
 
     selectedItemsChanged = pyqtSignal()
 
