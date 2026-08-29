@@ -8,6 +8,7 @@ from PyQt6.QtNetwork import QNetworkRequest
 if TYPE_CHECKING:
     from PyQt6.QtNetwork import QNetworkReply
     from ..data.DocumentsTreeNode import DocumentsTreeNode
+    from ..data.Root import Root
     from ..api.OnshapeApi import OnshapeApi
     from ..DocumentsItem import DocumentsItem
 
@@ -190,8 +191,8 @@ class DocumentsModel(QAbstractListModel):
         self.errorChanged.emit()
         self.loadedChanged.emit()
 
-        if hasattr(self._node.element, 'resetStorage'):
-            self._node.element.resetStorage()
+        if isinstance(self._node.element, Root):
+            self._api.clearFolderCache()
 
     @pyqtSlot()
     def refresh(self) -> None:
