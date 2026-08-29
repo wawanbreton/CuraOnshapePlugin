@@ -59,36 +59,45 @@ class BaseElement:
         self._allow_single_child_shortcut: bool = allow_single_child_shortcut
         self.is_refreshable: bool = is_refreshable
 
-    def loadChildrenPage(self,
-                         api: 'OnshapeApi',
-                         offset: int,
-                         on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
-                         on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        """
-        Loads a page of children starting at the given offset. Not all element types support
-        pagination; by default this is not implemented. Override in subclasses that need it.
-        """
-        raise NotImplementedError(f'Paginated loading not supported for {self.__class__}')
-
     def loadChildren(self,
                      api: 'OnshapeApi',
-                     on_finished: Callable[[List['DocumentsTreeNode']], None],
-                     on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        """Starts loading the children of the current object, and immediatly start loading the child
-           in case there is a single one and we allow for shortcutting"""
-        def shortcut_callback(children: List['DocumentsTreeNode']):
-            if len(children) == 1:
+                     on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                     on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
+                     offset: Optional[int] = None) -> None:
+        """Starts loading the children of the current object.
+
+        When offset is None, all children are loaded at once (non-paginated). The on_finished
+        callback always receives (children, has_more, document_count); for non-paginated loads
+        has_more is always False and document_count is 0.
+
+        When offset is provided, a single page starting at that offset is loaded. Only element
+        types that support pagination implement this; for others it behaves the same as a
+        non-paginated load, ignoring the offset.
+
+        Immediately navigates to the single child when there is one and allow_single_child_shortcut
+        is enabled.
+        """
+        def shortcut_callback(children: List['DocumentsTreeNode'], has_more: bool, document_count: int):
+            if len(children) == 1 and offset is None:
                 children[0].element.loadChildren(api, on_finished, on_error)
             else:
-                on_finished(children)
+                on_finished(children, has_more, document_count)
 
-        self._loadChildren(api, shortcut_callback if self._allow_single_child_shortcut else on_finished, on_error)
+        self._loadChildren(api,
+                           shortcut_callback if self._allow_single_child_shortcut else on_finished,
+                           on_error,
+                           offset)
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
-                      on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        """Method to be overridden by child classes to actually start loading the children"""
+                      on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
+                      offset: Optional[int] = None) -> None:
+        """Method to be overridden by child classes to actually start loading the children.
+
+        Non-paginated subclasses may ignore the offset and call on_finished with has_more=False
+        and document_count=0.
+        """
         return NotImplementedError(f'Children of {self.__class__} are not to be loaded')
 
     def hasThumbnail(self) -> bool:

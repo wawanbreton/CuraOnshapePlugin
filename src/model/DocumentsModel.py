@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING, List, Optional
 from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QAbstractListModel, QModelIndex, Qt
 from PyQt6.QtNetwork import QNetworkRequest
 
-from ..data.Root import Root
-
 if TYPE_CHECKING:
     from PyQt6.QtNetwork import QNetworkReply
     from ..data.DocumentsTreeNode import DocumentsTreeNode
@@ -85,17 +83,13 @@ class DocumentsModel(QAbstractListModel):
 
         self.selectedItemsChanged.emit()
 
-    # ── Loaded / root state ───────────────────────────────────────────────────
+    # ── Loaded state ─────────────────────────────────────────────────────────
 
     loadedChanged = pyqtSignal()
 
     @pyqtProperty(bool, notify = loadedChanged)
     def loaded(self) -> bool:
         return self._node.children_loaded
-
-    @pyqtProperty(bool, constant = True)
-    def isRoot(self) -> bool:
-        return isinstance(self._node.element, Root)
 
     # ── Error state ───────────────────────────────────────────────────────────
 
@@ -137,12 +131,7 @@ class DocumentsModel(QAbstractListModel):
 
     @pyqtSlot()
     def load(self) -> None:
-        def on_finished(children: List["DocumentsTreeNode"]):
-            self._node.setChildren(children)
-            self.loadedChanged.emit()
-            self._updateItems()
-
-        def on_finished_paged(children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
+        def on_finished(children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
             self._node.setChildren(children)
             self._next_page_offset = document_count
             self.loadedChanged.emit()
@@ -157,10 +146,7 @@ class DocumentsModel(QAbstractListModel):
             item.selected = False
 
         if not self.loaded:
-            if isinstance(self._node.element, Root):
-                self._node.element.loadChildrenPage(self._api, 0, on_finished_paged, on_error)
-            else:
-                self._node.element.loadChildren(self._api, on_finished, on_error)
+            self._node.element.loadChildren(self._api, on_finished, on_error)
 
     @pyqtSlot()
     def loadNextPage(self) -> None:
@@ -184,7 +170,7 @@ class DocumentsModel(QAbstractListModel):
             self._load_error = request.errorString() + bytes(request.readAll()).decode()
             self.errorChanged.emit()
 
-        self._node.element.loadChildrenPage(self._api, self._next_page_offset, on_finished, on_error)
+        self._node.element.loadChildren(self._api, on_finished, on_error, self._next_page_offset)
 
     @pyqtProperty(bool, constant = True)
     def refreshable(self) -> bool:
@@ -204,8 +190,8 @@ class DocumentsModel(QAbstractListModel):
         self.errorChanged.emit()
         self.loadedChanged.emit()
 
-        if isinstance(self._node.element, Root):
-            self._api.clearFolderCache()
+        if hasattr(self._node.element, 'resetStorage'):
+            self._node.element.resetStorage()
 
     @pyqtSlot()
     def refresh(self) -> None:
