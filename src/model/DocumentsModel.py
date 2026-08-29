@@ -24,6 +24,9 @@ class DocumentsModel(QObject):
         self._items: List["DocumentsItem"] = []
         self._path: List[str] = path + [self._node.element.name]
         self._load_error: Optional[str] = None
+        self._has_more_pages: bool = False
+        self._is_loading_next_page: bool = False
+        self._next_page_offset: int = 0
 
         if self.loaded:
             self._updateItems()
@@ -48,6 +51,17 @@ class DocumentsModel(QObject):
 
         self.selectedItemsChanged.emit()
 
+    def _appendItems(self, new_children: List["DocumentsTreeNode"]) -> None:
+        from .DocumentsItem import DocumentsItem
+        new_items = [DocumentsItem(child, self._api, self._path) for child in new_children]
+        self._items.extend(new_items)
+        self.elementsChanged.emit()
+
+        for item in new_items:
+            item.selectedChanged.connect(self.selectedItemsChanged)
+
+        self.selectedItemsChanged.emit()
+
     @pyqtProperty(bool, notify = elementsChanged)
     def loaded(self) -> bool:
         return self._node.children_loaded
@@ -66,10 +80,29 @@ class DocumentsModel(QObject):
     def error(self) -> Optional[str]:
         return self._load_error
 
+    hasMorePagesChanged = pyqtSignal()
+
+    @pyqtProperty(bool, notify = hasMorePagesChanged)
+    def hasMorePages(self) -> bool:
+        return self._has_more_pages
+
+    isLoadingNextPageChanged = pyqtSignal()
+
+    @pyqtProperty(bool, notify = isLoadingNextPageChanged)
+    def isLoadingNextPage(self) -> bool:
+        return self._is_loading_next_page
+
     @pyqtSlot()
     def load(self) -> None:
         def on_finished(children: List["DocumentsTreeNode"]):
             self._node.setChildren(children)
+            self._updateItems()
+
+        def on_finished_paged(children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
+            self._node.setChildren(children)
+            self._has_more_pages = has_more
+            self._next_page_offset = document_count
+            self.hasMorePagesChanged.emit()
             self._updateItems()
 
         def on_error(request: "QNetworkReply", error: "QNetworkReply.NetworkError"):
@@ -80,7 +113,38 @@ class DocumentsModel(QObject):
             item.selected = False
 
         if not self.loaded:
-            self._node.element.loadChildren(self._api, on_finished, on_error)
+            if isinstance(self._node.element, Root):
+                self._node.element.loadChildrenPage(self._api, 0, on_finished_paged, on_error)
+            else:
+                self._node.element.loadChildren(self._api, on_finished, on_error)
+
+    @pyqtSlot()
+    def loadNextPage(self) -> None:
+        """Loads the next page of items and appends them to the existing list"""
+        if not self._has_more_pages or self._is_loading_next_page:
+            return
+
+        self._is_loading_next_page = True
+        self.isLoadingNextPageChanged.emit()
+
+        def on_finished(new_children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
+            for child in new_children:
+                self._node.addChild(child)
+
+            self._has_more_pages = has_more
+            self._next_page_offset += document_count
+            self._is_loading_next_page = False
+            self.hasMorePagesChanged.emit()
+            self.isLoadingNextPageChanged.emit()
+            self._appendItems(new_children)
+
+        def on_error(request: "QNetworkReply", error: "QNetworkReply.NetworkError"):
+            self._is_loading_next_page = False
+            self.isLoadingNextPageChanged.emit()
+            self._load_error = request.errorString() + bytes(request.readAll()).decode()
+            self.errorChanged.emit()
+
+        self._node.element.loadChildrenPage(self._api, self._next_page_offset, on_finished, on_error)
 
     @pyqtProperty(bool, constant = True)
     def refreshable(self) -> bool:
@@ -89,10 +153,18 @@ class DocumentsModel(QObject):
     def clear(self) -> None:
         self._items = []
         self._node.clear()
+        self._has_more_pages = False
+        self._is_loading_next_page = False
+        self._next_page_offset = 0
         self.elementsChanged.emit()
+        self.hasMorePagesChanged.emit()
+        self.isLoadingNextPageChanged.emit()
 
         self._load_error = None
         self.errorChanged.emit()
+
+        if isinstance(self._node.element, Root):
+            self._api.clearFolderCache()
 
     @pyqtSlot()
     def refresh(self) -> None:
@@ -104,3 +176,4 @@ class DocumentsModel(QObject):
     @pyqtProperty(list, notify = selectedItemsChanged)
     def selectedItems(self) -> List["DocumentsItem"]:
         return [item for item in self._items if item.selected]
+

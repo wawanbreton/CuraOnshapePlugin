@@ -47,7 +47,30 @@ Item
 
             ScrollBar.vertical: UM.ScrollBar { id: verticalScrollBar }
 
+            footer: Item
+            {
+                width: listView.width
+                height: documentsModel.isLoadingNextPage ? UM.Theme.getSize("card_icon").height * root.iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height : 0
+                visible: documentsModel.isLoadingNextPage
+
+                LoadingItem
+                {
+                    anchors.fill: parent
+                }
+            }
+
             delegate: DocumentCard { }
+
+            onContentYChanged:
+            {
+                // When the user scrolls close to the bottom, load the next page
+                var threshold = UM.Theme.getSize("card_icon").height * root.iconSizeFactor * 2
+                if (documentsModel.hasMorePages && !documentsModel.isLoadingNextPage &&
+                    contentY + height >= contentHeight - threshold)
+                {
+                    documentsModel.loadNextPage()
+                }
+            }
         }
     }
 
@@ -56,3 +79,4 @@ Item
 
     function loadDocumentsIfVisible() { if(visible) { documentsModel.load() } }
 }
+

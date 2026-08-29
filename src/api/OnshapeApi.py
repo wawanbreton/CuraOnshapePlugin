@@ -5,7 +5,7 @@ import tempfile
 
 from PyQt6.QtCore import QObject, pyqtSlot, QUrlQuery, QUrl
 
-from typing import Callable, List, TYPE_CHECKING
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING
 
 from UM.Application import Application
 from UM.TaskManagement.HttpRequestManager import HttpRequestManager
@@ -38,11 +38,16 @@ class OnshapeApi(QObject):
         self._auth_scope: 'ApiAuthScope' = ApiAuthScope()
         self._json_scope: 'JsonDecoratorScope' = JsonDecoratorScope(self._auth_scope)
         self._binary_scope: 'AcceptBinaryDataScope' = AcceptBinaryDataScope(self._auth_scope)
+        self._folder_cache: Dict[str, Dict] = {}
 
     @pyqtSlot(str)
     def setToken(self, token: str) -> None:
         """Sets the authentication token, which is required to make API calls"""
         self._auth_scope.setToken(token)
+
+    def clearFolderCache(self) -> None:
+        """Clears the folder cache; should be called when the document list is refreshed"""
+        self._folder_cache.clear()
 
     def _getFolders(self,
                     on_finished: Callable[[List['DocumentsTreeNode']], None],
@@ -51,35 +56,45 @@ class OnshapeApi(QObject):
         """
         Retrieves the next required folder content, which is done recursively and dynamically
         because we don't know in advance which subfolders are existing and non-empty.
+        Already-fetched folder data is taken from the cache to avoid redundant API calls across
+        page loads.
         """
 
         def response_received(reply: 'QNetworkReply'):
             data_json = json.loads(bytes(reply.readAll()).decode())
+            self._folder_cache[data_json['id']] = data_json
             storage.appendFolder(data_json)
             self._getFolders(on_finished, on_error, storage)
 
         next_folder = storage.getNextFolderToRetrieve()
 
         if next_folder is not None:
-            url = f'{self.API_ROOT}/folders/{next_folder}'
+            if next_folder in self._folder_cache:
+                # Reuse cached folder data without an extra API call
+                storage.appendFolder(self._folder_cache[next_folder])
+                self._getFolders(on_finished, on_error, storage)
+            else:
+                url = f'{self.API_ROOT}/folders/{next_folder}'
 
-            self._http.get(url,
-                           scope = self._json_scope,
-                           callback = response_received,
-                           error_callback = on_error,
-                           timeout = self.DEFAULT_REQUEST_TIMEOUT)
+                self._http.get(url,
+                               scope = self._json_scope,
+                               callback = response_received,
+                               error_callback = on_error,
+                               timeout = self.DEFAULT_REQUEST_TIMEOUT)
         else:
             on_finished(storage.getTree().children)
 
-    def _listDocuments(self,
-                       on_finished: Callable[[List['DocumentsTreeNode']], None],
-                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
-                       storage: 'UserStorage',
-                       offset: int) -> None:
+    def listDocumentsPage(self,
+                          offset: int,
+                          on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                          on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """
-        Retrieves the list of root documents in the user storage. This is done multiple times
-        because each call retrieves a sublist of the total, hence the given offset. Once the
-        documents are complete, we also start receiving the folders tree.
+        Retrieves a single page of the root documents in the user storage, starting at the given
+        offset. The finished callback receives:
+        - the list of tree nodes for the current page,
+        - a boolean indicating whether more pages are available,
+        - the count of documents fetched (to be used as the next page offset).
+        Folders are resolved and injected into the tree as part of the same request.
         """
 
         url = QUrl(f'{self.API_ROOT}/documents')
@@ -93,25 +108,21 @@ class OnshapeApi(QObject):
 
         def response_received(reply: 'QNetworkReply'):
             data_json = json.loads(bytes(reply.readAll()).decode())
+            storage = UserStorage()
             storage.appendDocuments(data_json['items'])
+            has_more = data_json['next'] is not None
+            document_count = len(data_json['items'])
 
-            if data_json['next'] is not None:
-                self._listDocuments(on_finished, on_error, storage, offset + self.QUERY_LIMIT)
-            else:
-                self._getFolders(on_finished, on_error, storage)
+            def folders_finished(children: List['DocumentsTreeNode']):
+                on_finished(children, has_more, document_count)
+
+            self._getFolders(folders_finished, on_error, storage)
 
         self._http.get(url.toString(),
                        scope = self._json_scope,
                        callback = response_received,
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
-
-    def listDocuments(self,
-                      on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        """Lists the root documents and the whole folder tree present in the user storage"""
-        storage = UserStorage()
-        self._listDocuments(on_finished, on_error, storage, 0)
 
     def listWorkspaces(self,
                        document_id: str,

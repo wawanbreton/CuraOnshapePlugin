@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import TYPE_CHECKING, Callable, List
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 from .BaseElement import BaseElement
 
@@ -20,4 +20,15 @@ class Root(BaseElement):
                       api: 'OnshapeApi',
                       on_finished: Callable[[List['DocumentsTreeNode']], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        api.listDocuments(on_finished, on_error)
+        def page_finished(children: List['DocumentsTreeNode'], has_more: bool, document_count: int):
+            on_finished(children)
+
+        api.listDocumentsPage(0, page_finished, on_error)
+
+    def loadChildrenPage(self,
+                         api: 'OnshapeApi',
+                         offset: int,
+                         on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                         on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        """Loads a single page of children starting at the given offset"""
+        api.listDocumentsPage(offset, on_finished, on_error)

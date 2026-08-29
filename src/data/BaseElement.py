@@ -59,6 +59,17 @@ class BaseElement:
         self._allow_single_child_shortcut: bool = allow_single_child_shortcut
         self.is_refreshable: bool = is_refreshable
 
+    def loadChildrenPage(self,
+                         api: 'OnshapeApi',
+                         offset: int,
+                         on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                         on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        """
+        Loads a page of children starting at the given offset. Not all element types support
+        pagination; by default this is not implemented. Override in subclasses that need it.
+        """
+        raise NotImplementedError(f'Paginated loading not supported for {self.__class__}')
+
     def loadChildren(self,
                      api: 'OnshapeApi',
                      on_finished: Callable[[List['DocumentsTreeNode']], None],
