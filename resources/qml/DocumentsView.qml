@@ -56,6 +56,27 @@ Item
 
             delegate: DocumentCard { }
 
+            // Saved scroll position to restore after a next-page append
+            property real savedContentY: 0
+            property bool restoringScroll: false
+
+            Connections
+            {
+                target: documentsModel
+
+                function onElementsChanged()
+                {
+                    if(listView.savedContentY > 0)
+                    {
+                        // A next-page append triggered this change; restore the position.
+                        // Use Qt.callLater so the layout has settled before we set contentY.
+                        var posToRestore = listView.savedContentY
+                        listView.savedContentY = 0
+                        Qt.callLater(function() { listView.contentY = posToRestore })
+                    }
+                }
+            }
+
             onContentYChanged:
             {
                 // When the user scrolls close to the bottom, load the next page
@@ -63,6 +84,7 @@ Item
                 if (documentsModel.hasMorePages && !documentsModel.isLoadingNextPage &&
                     contentY + height >= contentHeight - threshold)
                 {
+                    listView.savedContentY = contentY
                     documentsModel.loadNextPage()
                 }
             }
