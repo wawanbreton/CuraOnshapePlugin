@@ -84,10 +84,10 @@ class OnshapeApi(QObject):
         else:
             on_finished(storage.getTree().children)
 
-    def listDocumentsPage(self,
-                          offset: int,
-                          on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
-                          on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+    def listDocuments(self,
+                      offset: int,
+                      on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """
         Retrieves a single page of the root documents in the user storage, starting at the given
         offset. The finished callback receives:
