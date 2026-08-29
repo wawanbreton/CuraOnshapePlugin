@@ -1,9 +1,8 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import TYPE_CHECKING, Callable, List
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 from .BaseElement import BaseElement
-from .UserStorage import UserStorage
 
 if TYPE_CHECKING:
     from ..api.OnshapeApi import OnshapeApi
@@ -16,7 +15,6 @@ class Root(BaseElement):
 
     def __init__(self):
         super().__init__('', None)
-        self._storage: UserStorage = UserStorage()
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
@@ -25,7 +23,7 @@ class Root(BaseElement):
         def page_finished(children: List['DocumentsTreeNode'], has_more: bool, document_count: int):
             on_finished(children)
 
-        api.listDocumentsPage(0, self._storage, page_finished, on_error)
+        api.listDocumentsPage(0, page_finished, on_error)
 
     def loadChildrenPage(self,
                          api: 'OnshapeApi',
@@ -33,8 +31,4 @@ class Root(BaseElement):
                          on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
                          on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Loads a single page of children starting at the given offset"""
-        api.listDocumentsPage(offset, self._storage, on_finished, on_error)
-
-    def resetStorage(self) -> None:
-        """Resets the shared storage, to be called when the document list is refreshed"""
-        self._storage = UserStorage()
+        api.listDocumentsPage(offset, on_finished, on_error)
