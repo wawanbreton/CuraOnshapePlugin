@@ -32,8 +32,6 @@ class DocumentsModel(QAbstractListModel):
         if self.loaded:
             self._updateItems()
 
-    # ── QAbstractListModel interface ─────────────────────────────────────────
-
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         if parent.isValid():
             return 0
@@ -47,15 +45,11 @@ class DocumentsModel(QAbstractListModel):
         return None
 
     def roleNames(self) -> dict:
-        return {self.ModelDataRole: b'modelData'}
-
-    # ── Path property ─────────────────────────────────────────────────────────
+        return { self.ModelDataRole: b'modelData' }
 
     @pyqtProperty(list, constant = True)
     def path(self) -> List[str]:
         return self._path
-
-    # ── Internal item management ──────────────────────────────────────────────
 
     def _updateItems(self) -> None:
         """Replaces the entire item list (used for the initial load and clear)."""
@@ -84,15 +78,11 @@ class DocumentsModel(QAbstractListModel):
 
         self.selectedItemsChanged.emit()
 
-    # ── Loaded state ─────────────────────────────────────────────────────────
-
     loadedChanged = pyqtSignal()
 
     @pyqtProperty(bool, notify = loadedChanged)
     def loaded(self) -> bool:
         return self._node.children_loaded
-
-    # ── Error state ───────────────────────────────────────────────────────────
 
     errorChanged = pyqtSignal()
 
@@ -103,8 +93,6 @@ class DocumentsModel(QAbstractListModel):
     @pyqtProperty(str, notify = errorChanged)
     def error(self) -> Optional[str]:
         return self._load_error
-
-    # ── Pagination state ──────────────────────────────────────────────────────
 
     hasMorePagesChanged = pyqtSignal()
 
@@ -127,8 +115,6 @@ class DocumentsModel(QAbstractListModel):
         if value != self._is_loading_next_page:
             self._is_loading_next_page = value
             self.isLoadingNextPageChanged.emit()
-
-    # ── Load / next-page / refresh ────────────────────────────────────────────
 
     @pyqtSlot()
     def load(self) -> None:
@@ -199,11 +185,8 @@ class DocumentsModel(QAbstractListModel):
         self.clear()
         self.load()
 
-    # ── Selected items ────────────────────────────────────────────────────────
-
     selectedItemsChanged = pyqtSignal()
 
     @pyqtProperty(list, notify = selectedItemsChanged)
     def selectedItems(self) -> List["DocumentsItem"]:
         return [item for item in self._items if item.selected]
-
