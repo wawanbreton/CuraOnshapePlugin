@@ -61,22 +61,33 @@ class BaseElement:
 
     def loadChildren(self,
                      api: 'OnshapeApi',
-                     on_finished: Callable[[List['DocumentsTreeNode']], None],
-                     on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+                     on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                     on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
+                     offset: Optional[int] = None) -> None:
         """Starts loading the children of the current object, and immediatly start loading the child
-           in case there is a single one and we allow for shortcutting"""
-        def shortcut_callback(children: List['DocumentsTreeNode']):
-            if len(children) == 1:
+           in case there is a single one and we allow for shortcutting
+
+        :param api The API object to be used to load the children
+        :param on_finished Callback function called on success. Receives (children, has_more, document_count).
+        :param on_error Callback function called on communication error
+        :param offset The offset to start loading the pages children, or None to load the first (or all of the) children
+        """
+        def shortcut_callback(children: List['DocumentsTreeNode'], has_more: bool, document_count: int):
+            if len(children) == 1 and offset is None:
                 children[0].element.loadChildren(api, on_finished, on_error)
             else:
-                on_finished(children)
+                on_finished(children, has_more, document_count)
 
-        self._loadChildren(api, shortcut_callback if self._allow_single_child_shortcut else on_finished, on_error)
+        self._loadChildren(api,
+                           shortcut_callback if self._allow_single_child_shortcut else on_finished,
+                           on_error,
+                           offset)
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
-                      on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+                      on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
+                      offset: Optional[int] = None) -> None:
         """Method to be overridden by child classes to actually start loading the children"""
         return NotImplementedError(f'Children of {self.__class__} are not to be loaded')
 

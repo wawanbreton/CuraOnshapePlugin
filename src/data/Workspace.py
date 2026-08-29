@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import TYPE_CHECKING, Callable, List, Dict, Any
+from typing import TYPE_CHECKING, Callable, List, Dict, Any, Optional
 
 from datetime import datetime
 import os
@@ -36,6 +36,7 @@ class Workspace(BaseElement):
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
-                      on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
-        api.listTabs(self._document_id, self.id, on_finished, on_error)
+                      on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
+                      offset: Optional[int] = None):
+        api.listTabs(self._document_id, self.id, lambda children: on_finished(children, False, 0), on_error)

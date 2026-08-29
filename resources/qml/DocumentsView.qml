@@ -41,13 +41,31 @@ Item
             anchors.fill: parent
             anchors.margins: UM.Theme.getSize("default_margin").width
             spacing: UM.Theme.getSize("default_margin").height
-            model: documentsModel.elements
+            model: documentsModel
             visible: documentsModel.loaded && !documentsModel.hasError
             clip: true
 
             ScrollBar.vertical: UM.ScrollBar { id: verticalScrollBar }
 
+            footer: LoadingItem
+            {
+                width: listView.width
+                height: UM.Theme.getSize("card_icon").height * root.iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height
+                visible: documentsModel.hasMorePages || documentsModel.isLoadingNextPage
+            }
+
             delegate: DocumentCard { }
+
+            onContentYChanged:
+            {
+                // When the user scrolls close to the bottom, load the next page
+                var threshold = UM.Theme.getSize("card_icon").height * root.iconSizeFactor * 2
+                if (documentsModel.hasMorePages && !documentsModel.isLoadingNextPage &&
+                    contentY + height >= contentHeight - threshold)
+                {
+                    documentsModel.loadNextPage()
+                }
+            }
         }
     }
 
@@ -56,3 +74,4 @@ Item
 
     function loadDocumentsIfVisible() { if(visible) { documentsModel.load() } }
 }
+
