@@ -86,11 +86,21 @@ class DocumentsModel(QObject):
     def hasMorePages(self) -> bool:
         return self._has_more_pages
 
+    def _setHasMorePages(self, value: bool) -> None:
+        if value != self._has_more_pages:
+            self._has_more_pages = value
+            self.hasMorePagesChanged.emit()
+
     isLoadingNextPageChanged = pyqtSignal()
 
     @pyqtProperty(bool, notify = isLoadingNextPageChanged)
     def isLoadingNextPage(self) -> bool:
         return self._is_loading_next_page
+
+    def _setIsLoadingNextPage(self, value: bool) -> None:
+        if value != self._is_loading_next_page:
+            self._is_loading_next_page = value
+            self.isLoadingNextPageChanged.emit()
 
     @pyqtSlot()
     def load(self) -> None:
@@ -100,9 +110,8 @@ class DocumentsModel(QObject):
 
         def on_finished_paged(children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
             self._node.setChildren(children)
-            self._has_more_pages = has_more
             self._next_page_offset = document_count
-            self.hasMorePagesChanged.emit()
+            self._setHasMorePages(has_more)
             self._updateItems()
 
         def on_error(request: "QNetworkReply", error: "QNetworkReply.NetworkError"):
@@ -124,23 +133,19 @@ class DocumentsModel(QObject):
         if not self._has_more_pages or self._is_loading_next_page:
             return
 
-        self._is_loading_next_page = True
-        self.isLoadingNextPageChanged.emit()
+        self._setIsLoadingNextPage(True)
 
         def on_finished(new_children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
             for child in new_children:
                 self._node.addChild(child)
 
-            self._has_more_pages = has_more
             self._next_page_offset += document_count
-            self._is_loading_next_page = False
-            self.hasMorePagesChanged.emit()
-            self.isLoadingNextPageChanged.emit()
+            self._setIsLoadingNextPage(False)
+            self._setHasMorePages(has_more)
             self._appendItems(new_children)
 
         def on_error(request: "QNetworkReply", error: "QNetworkReply.NetworkError"):
-            self._is_loading_next_page = False
-            self.isLoadingNextPageChanged.emit()
+            self._setIsLoadingNextPage(False)
             self._load_error = request.errorString() + bytes(request.readAll()).decode()
             self.errorChanged.emit()
 
@@ -153,12 +158,10 @@ class DocumentsModel(QObject):
     def clear(self) -> None:
         self._items = []
         self._node.clear()
-        self._has_more_pages = False
-        self._is_loading_next_page = False
         self._next_page_offset = 0
         self.elementsChanged.emit()
-        self.hasMorePagesChanged.emit()
-        self.isLoadingNextPageChanged.emit()
+        self._setHasMorePages(False)
+        self._setIsLoadingNextPage(False)
 
         self._load_error = None
         self.errorChanged.emit()

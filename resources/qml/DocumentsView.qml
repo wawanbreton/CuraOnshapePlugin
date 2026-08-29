@@ -47,16 +47,11 @@ Item
 
             ScrollBar.vertical: UM.ScrollBar { id: verticalScrollBar }
 
-            footer: Item
+            footer: LoadingItem
             {
                 width: listView.width
                 height: documentsModel.isLoadingNextPage ? UM.Theme.getSize("card_icon").height * root.iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height : 0
                 visible: documentsModel.isLoadingNextPage
-
-                LoadingItem
-                {
-                    anchors.fill: parent
-                }
             }
 
             delegate: DocumentCard { }
