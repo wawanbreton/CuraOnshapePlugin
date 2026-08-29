@@ -205,7 +205,7 @@ class DocumentsModel(QAbstractListModel):
         self.loadedChanged.emit()
 
         if isinstance(self._node.element, Root):
-            self._api.clearFolderCache()
+            self._node.element.resetStorage()
 
     @pyqtSlot()
     def refresh(self) -> None:
