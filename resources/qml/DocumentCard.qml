@@ -115,7 +115,6 @@ MouseArea
 
                         ComboBox
                         {
-                            Layout.fillWidth: true
                             model: modelData.options
                             textRole: "name"
                             currentIndex: modelData.selectedIndex

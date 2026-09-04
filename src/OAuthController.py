@@ -28,18 +28,21 @@ class OAuthController(QObject):
         self._application: "CuraApplication" = application
 
         secrets_file_path = os.path.join(os.path.dirname(__file__), '..', 'resources', 'auth.json')
-        with open(secrets_file_path, "rb") as secrets_file:
-            def xor_encrypt_decrypt(data, key):
-                return bytearray([data[i] ^ key[i % len(key)] for i in range(len(data))])
+        encryption_key = '__ENCRYPTION_KEY__' # Replaced with actual key by runner
+        if encryption_key.startswith('__'):
+            # Dev mode
+            with open(secrets_file_path, "r", encoding = "utf-8") as secrets_file:
+                json_data = json.load(secrets_file)
+        else:
+            with open(secrets_file_path, "rb") as secrets_file:
+                def xor_encrypt_decrypt(data, key):
+                    return bytearray([data[i] ^ key[i % len(key)] for i in range(len(data))])
 
-            encryption_key = '__ENCRYPTION_KEY__' # Replaced with actual key by runner
-            if encryption_key.startswith('__'):
-                # Dev mode
                 auth_key_path = os.path.join(os.path.dirname(__file__), '..', 'resources', 'auth_key')
                 encryption_key = open(auth_key_path, 'r').read()
 
-            secrets_decrypted = xor_encrypt_decrypt(secrets_file.read(), encryption_key.encode('utf-8'))
-            json_data = json.loads(secrets_decrypted.decode("utf-8"))
+                secrets_decrypted = xor_encrypt_decrypt(secrets_file.read(), encryption_key.encode('utf-8'))
+                json_data = json.loads(secrets_decrypted.decode("utf-8"))
 
         callback_port = 35320
         oauth_settings = OAuth2Settings(

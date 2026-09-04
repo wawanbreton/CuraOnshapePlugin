@@ -200,10 +200,7 @@ class DocumentsModel(QAbstractListModel):
         return ';'.join(values) if len(values) > 0 else None
 
     def _onConfigurationParameterChanged(self) -> None:
-        self._node.clear()
-        self._items = []
-        self.elementsChanged.emit()
-        self.selectedItemsChanged.emit()
+        self.clear()
         self._loadChildren()
 
     @pyqtSlot()
@@ -228,7 +225,7 @@ class DocumentsModel(QAbstractListModel):
             self._load_error = request.errorString() + bytes(request.readAll()).decode()
             self.errorChanged.emit()
 
-        self._node.element.loadChildren(self._api, on_finished, on_error, self._next_page_offset)
+        self._node.element.loadChildren(self._api, self._buildConfigurationString(), on_finished, on_error, self._next_page_offset)
 
     @pyqtProperty(bool, constant = True)
     def refreshable(self) -> bool:

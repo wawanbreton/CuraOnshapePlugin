@@ -7,7 +7,7 @@ Item
 {
     UM.I18nCatalog{id: catalog; name:"onshape"}
 
-    implicitHeight: UM.get
+    implicitHeight: buttonDownload.height + 2 * UM.Theme.getSize("default_margin").height
 
     Cura.PrimaryButton
     {
