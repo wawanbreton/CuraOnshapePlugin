@@ -61,6 +61,7 @@ class BaseElement:
 
     def loadChildren(self,
                      api: 'OnshapeApi',
+                     configuration: Optional[str],
                      on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
                      offset: Optional[int] = None) -> None:
@@ -68,28 +69,38 @@ class BaseElement:
            in case there is a single one and we allow for shortcutting
 
         :param api The API object to be used to load the children
+        :param configuration The configuration string for part studio elements
         :param on_finished Callback function called on success. Receives (children, has_more, document_count).
         :param on_error Callback function called on communication error
         :param offset The offset to start loading the pages children, or None to load the first (or all of the) children
         """
         def shortcut_callback(children: List['DocumentsTreeNode'], has_more: bool, document_count: int):
-            if len(children) == 1 and offset is None:
-                children[0].element.loadChildren(api, on_finished, on_error)
+            if len(children) == 1 and not children[0].element.supports_configuration and offset is None:
+                children[0].element.loadChildren(api, configuration, on_finished, on_error, offset)
             else:
                 on_finished(children, has_more, document_count)
 
-        self._loadChildren(api,
-                           shortcut_callback if self._allow_single_child_shortcut else on_finished,
-                           on_error,
-                           offset)
+        self._loadChildren(api, configuration, shortcut_callback if self._allow_single_child_shortcut else on_finished, on_error, offset)
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
+                      configuration: Optional[str],
                       on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
                       offset: Optional[int] = None) -> None:
         """Method to be overridden by child classes to actually start loading the children"""
         return NotImplementedError(f'Children of {self.__class__} are not to be loaded')
+
+    @property
+    def supports_configuration(self) -> bool:
+        return False
+
+    def loadConfiguration(self,
+                          api: 'OnshapeApi',
+                          on_finished: Callable[[Dict[str, Any]], None],
+                          on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        """Method to be overridden by child classes that support Onshape configurations"""
+        on_finished({})
 
     def hasThumbnail(self) -> bool:
         return self.thumbnail_url is not None

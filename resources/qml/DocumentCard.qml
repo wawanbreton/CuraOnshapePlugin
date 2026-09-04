@@ -27,12 +27,19 @@ MouseArea
 
         return width
     }
-    implicitHeight: UM.Theme.getSize("card_icon").height * iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height
+    implicitHeight: Math.max(UM.Theme.getSize("card_icon").height * iconSizeFactor,
+                             configurationColumn.visible ? configurationColumn.implicitHeight : 0)
+                    + 2 * UM.Theme.getSize("default_margin").height
 
     hoverEnabled: true
     enabled: modelData.hasChildren || modelData.isDownloadable // Should actually always be true...
     onClicked:
     {
+        if(isInside(configurationColumn, mouse.x, mouse.y) || isInside(checkBoxSelected, mouse.x, mouse.y))
+        {
+            return
+        }
+
         if(modelData.hasChildren)
         {
             documentsListStack.push("DocumentsView.qml", {"documentsModel": modelData.childModel})
@@ -82,8 +89,46 @@ MouseArea
 
             ColumnLayout
             {
+                id: configurationColumn
+                visible: modelData.hasConfigurationParameters
+                Layout.preferredWidth: Math.min(430, Math.max(300, root.width * 0.42))
+                Layout.rightMargin: UM.Theme.getSize("default_margin").width
+                Layout.alignment: Qt.AlignVCenter
+                spacing: UM.Theme.getSize("narrow_margin").height
+
+                Repeater
+                {
+                    model: modelData.configurationParameters
+
+                    ColumnLayout
+                    {
+                        Layout.fillWidth: true
+                        spacing: UM.Theme.getSize("narrow_margin").height
+
+                        UM.Label
+                        {
+                            Layout.fillWidth: true
+                            text: modelData.name
+                            font: UM.Theme.getFont("small")
+                            elide: Text.ElideRight
+                        }
+
+                        ComboBox
+                        {
+                            model: modelData.options
+                            textRole: "name"
+                            currentIndex: modelData.selectedIndex
+                            onActivated: modelData.selectedIndex = index
+                        }
+                    }
+                }
+            }
+
+            ColumnLayout
+            {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                Layout.minimumWidth: 140
 
                 spacing: UM.Theme.getSize("narrow_margin").width
 
@@ -123,18 +168,23 @@ MouseArea
                     }
                 }
             }
-        }
 
-        UM.CheckBox
-        {
-            id: checkBoxSelected
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.margins: UM.Theme.getSize("default_margin").height
-            visible: modelData.isDownloadable
-            text: catalog.i18nc("@action:button", "Add to selection")
-            checked: modelData.selected
-            onCheckedChanged: modelData.selected = checked
+            UM.CheckBox
+            {
+                id: checkBoxSelected
+                visible: modelData.isDownloadable
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: 130
+                text: catalog.i18nc("@action:button", "Add to selection")
+                checked: modelData.selected
+                onClicked: modelData.selected = checked
+            }
         }
+    }
+
+    function isInside(item, x, y)
+    {
+        var point = item.mapFromItem(root, x, y)
+        return item.visible && point.x >= 0 && point.x <= item.width && point.y >= 0 && point.y <= item.height
     }
 }

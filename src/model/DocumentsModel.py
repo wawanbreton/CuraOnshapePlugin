@@ -5,6 +5,9 @@ from typing import TYPE_CHECKING, List, Optional
 from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QAbstractListModel, QModelIndex, Qt
 from PyQt6.QtNetwork import QNetworkRequest
 
+from ..data.Root import Root
+from .ConfigurationParameter import ConfigurationParameter
+
 if TYPE_CHECKING:
     from PyQt6.QtNetwork import QNetworkReply
     from ..data.DocumentsTreeNode import DocumentsTreeNode
@@ -28,6 +31,8 @@ class DocumentsModel(QAbstractListModel):
         self._has_more_pages: bool = False
         self._is_loading_next_page: bool = False
         self._next_page_offset: int = 0
+        self._configuration_loaded: bool = False
+        self._configuration_parameters: List[ConfigurationParameter] = []
 
         if self.loaded:
             self._updateItems()
@@ -55,7 +60,7 @@ class DocumentsModel(QAbstractListModel):
         """Replaces the entire item list (used for the initial load and clear)."""
         from .DocumentsItem import DocumentsItem
         self.beginResetModel()
-        self._items = [DocumentsItem(child, self._api, self._path) for child in self._node.children]
+        self._items = [DocumentsItem(child, self._api, self._path, self) for child in self._node.children]
         self.endResetModel()
 
         for item in self._items:
@@ -67,7 +72,7 @@ class DocumentsModel(QAbstractListModel):
         """Appends new items at the end of the list without resetting the view."""
         from .DocumentsItem import DocumentsItem
         first = len(self._items)
-        new_items = [DocumentsItem(child, self._api, self._path) for child in new_children]
+        new_items = [DocumentsItem(child, self._api, self._path, self) for child in new_children]
 
         self.beginInsertRows(QModelIndex(), first, first + len(new_items) - 1)
         self._items.extend(new_items)
@@ -84,6 +89,19 @@ class DocumentsModel(QAbstractListModel):
     def loaded(self) -> bool:
         return self._node.children_loaded
 
+    configurationParametersChanged = pyqtSignal()
+
+    @pyqtProperty(list, notify = configurationParametersChanged)
+    def configurationParameters(self) -> List[ConfigurationParameter]:
+        return self._configuration_parameters
+
+    @pyqtProperty(bool, notify = configurationParametersChanged)
+    def hasConfigurationParameters(self) -> bool:
+        return len(self._configuration_parameters) > 0
+
+    @pyqtProperty(bool, constant = True)
+    def isRoot(self) -> bool:
+        return isinstance(self._node.element, Root)
     errorChanged = pyqtSignal()
 
     @pyqtProperty(bool, notify = errorChanged)
@@ -118,6 +136,13 @@ class DocumentsModel(QAbstractListModel):
 
     @pyqtSlot()
     def load(self) -> None:
+        if self._node.element.supports_configuration and not self._configuration_loaded:
+            self._loadConfiguration()
+            return
+
+        self._loadChildren()
+
+    def _loadChildren(self) -> None:
         def on_finished(children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
             self._node.setChildren(children)
             self._next_page_offset = document_count
@@ -133,7 +158,50 @@ class DocumentsModel(QAbstractListModel):
             item.selected = False
 
         if not self.loaded:
-            self._node.element.loadChildren(self._api, on_finished, on_error)
+            self._node.element.loadChildren(self._api, self._buildConfigurationString(), on_finished, on_error)
+
+    def _loadConfiguration(self) -> None:
+        def on_finished(configuration: dict):
+            self._configuration_loaded = True
+            self._configuration_parameters = self._createConfigurationParameters(configuration)
+
+            for parameter in self._configuration_parameters:
+                parameter.selectedIndexChanged.connect(self._onConfigurationParameterChanged)
+
+            self.configurationParametersChanged.emit()
+            self._loadChildren()
+
+        def on_error(request: "QNetworkReply", error: "QNetworkReply.NetworkError"):
+            self._load_error = request.errorString() + bytes(request.readAll()).decode()
+            self.errorChanged.emit()
+
+        self._node.element.loadConfiguration(self._api, on_finished, on_error)
+
+    def _createConfigurationParameters(self, configuration: dict) -> List[ConfigurationParameter]:
+        current_values = {
+            parameter['parameterId']: parameter.get('value')
+            for parameter in configuration.get('currentConfiguration', [])
+            if 'parameterId' in parameter
+        }
+
+        return [
+            ConfigurationParameter(parameter, current_values.get(parameter['parameterId']))
+            for parameter in configuration.get('configurationParameters', [])
+            if 'parameterId' in parameter and len(parameter.get('options', [])) > 0
+               and parameter.get('isVisible', True)
+        ]
+
+    def _buildConfigurationString(self) -> Optional[str]:
+        values = [
+            f'{parameter.parameterId}={parameter.selectedValue}'
+            for parameter in self._configuration_parameters
+            if len(parameter.selectedValue) > 0
+        ]
+        return ';'.join(values) if len(values) > 0 else None
+
+    def _onConfigurationParameterChanged(self) -> None:
+        self.clear()
+        self._loadChildren()
 
     @pyqtSlot()
     def loadNextPage(self) -> None:
@@ -157,7 +225,7 @@ class DocumentsModel(QAbstractListModel):
             self._load_error = request.errorString() + bytes(request.readAll()).decode()
             self.errorChanged.emit()
 
-        self._node.element.loadChildren(self._api, on_finished, on_error, self._next_page_offset)
+        self._node.element.loadChildren(self._api, self._buildConfigurationString(), on_finished, on_error, self._next_page_offset)
 
     @pyqtProperty(bool, constant = True)
     def refreshable(self) -> bool:
@@ -183,6 +251,9 @@ class DocumentsModel(QAbstractListModel):
     @pyqtSlot()
     def refresh(self) -> None:
         self.clear()
+        self._configuration_loaded = False
+        self._configuration_parameters = []
+        self.configurationParametersChanged.emit()
         self.load()
 
     selectedItemsChanged = pyqtSignal()

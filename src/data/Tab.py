@@ -22,8 +22,18 @@ class Tab(BaseElement):
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
+                      configuration: Optional[str],
                       on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
                       offset: Optional[int] = None) -> None:
-        api.listParts(self._document_id, self._workspace_id, self.id,
-                      lambda parts: on_finished(parts, False, 0), on_error)
+        api.listParts(self._document_id, self._workspace_id, self.id, configuration, lambda parts: on_finished(parts, False, 0), on_error)
+
+    @property
+    def supports_configuration(self) -> bool:
+        return True
+
+    def loadConfiguration(self,
+                          api: 'OnshapeApi',
+                          on_finished: Callable[[Dict[str, Any]], None],
+                          on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        api.getConfiguration(self._document_id, self._workspace_id, self.id, on_finished, on_error)
