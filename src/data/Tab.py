@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import TYPE_CHECKING, Dict, Any, Callable, List
+from typing import TYPE_CHECKING, Dict, Any, Callable, List, Optional
 
 from .BaseElement import BaseElement
 
@@ -22,10 +22,11 @@ class Tab(BaseElement):
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
-                      configuration: str,
-                      on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        api.listParts(self._document_id, self._workspace_id, self.id, configuration, on_finished, on_error)
+                      configuration: Optional[str],
+                      on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
+                      offset: Optional[int] = None) -> None:
+        api.listParts(self._document_id, self._workspace_id, self.id, configuration, lambda parts: on_finished(parts, False, 0), on_error)
 
     @property
     def supports_configuration(self) -> bool:

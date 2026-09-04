@@ -19,6 +19,7 @@ class Root(BaseElement):
     def _loadChildren(self,
                       api: 'OnshapeApi',
                       configuration: Optional[str],
-                      on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        api.listDocuments(on_finished, on_error)
+                      on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
+                      offset: Optional[int] = None) -> None:
+        api.listDocuments(0 if offset is None else offset, on_finished, on_error)

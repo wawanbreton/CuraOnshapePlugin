@@ -20,6 +20,7 @@ class Document(StorageElement):
     def _loadChildren(self,
                       api: 'OnshapeApi',
                       configuration: Optional[str],
-                      on_finished: Callable[[List['DocumentsTreeNode']], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        api.listWorkspaces(self.id, on_finished, on_error)
+                      on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
+                      offset: Optional[int] = None) -> None:
+        api.listWorkspaces(self.id, lambda children: on_finished(children, False, 0), on_error)
