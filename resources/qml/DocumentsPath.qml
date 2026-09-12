@@ -124,6 +124,6 @@ Item
 
     function popToIndex(index)
     {
-        documentsListStack.pop(documentsListStack.get(index))
+        documentsListStack.pop(documentsListStack.get(index));
     }
 }

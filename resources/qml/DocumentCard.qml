@@ -31,17 +31,7 @@ MouseArea
 
     hoverEnabled: true
     enabled: modelData.hasChildren || modelData.isDownloadable // Should actually always be true...
-    onClicked:
-    {
-        if(modelData.hasChildren)
-        {
-            documentsListStack.push("DocumentsView.qml", {"documentsModel": modelData.childModel})
-        }
-        else if(modelData.isDownloadable)
-        {
-            modelData.selected = !modelData.selected
-        }
-    }
+    onClicked: trigger()
 
     Rectangle
     {
@@ -135,6 +125,33 @@ MouseArea
             text: catalog.i18nc("@action:button", "Add to selection")
             checked: modelData.selected
             onCheckedChanged: modelData.selected = checked
+        }
+
+        Cura.PrimaryButton
+        {
+            id: buttonSetAsDefault
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: UM.Theme.getSize("default_margin").height
+            text: catalog.i18nc("@action:button", "Open and set as default")
+            visible: modelData.settableAsDefault
+            onClicked:
+            {
+                modelData.setAsDefault();
+                root.trigger();
+            }
+        }
+    }
+
+    function trigger()
+    {
+        if(modelData.hasChildren)
+        {
+            documentsListStack.push("DocumentsView.qml", {"documentsModel": modelData.childModel})
+        }
+        else if(modelData.isDownloadable)
+        {
+            modelData.selected = !modelData.selected
         }
     }
 }

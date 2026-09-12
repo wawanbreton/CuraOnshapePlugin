@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Optional, List
 
-from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal
+from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal, pyqtSlot
 
 from UM.Logger import Logger
 
@@ -52,10 +52,7 @@ class DocumentsItem(QObject):
             else:
                 if not self._thumbnail_downloaded:
                     self._thumbnail_downloaded = True
-                    if self.element.thumbnail_url is not None:
-                        self._api.loadThumbnail(self.element.thumbnail_url,
-                                                self._onThumbnailReceived,
-                                                self._onThumbnailError)
+                    self.element.loadThumbnail(self._api, self._onThumbnailReceived, self._onThumbnailError)
                 return None
         else:
             return self.element.icon
@@ -90,6 +87,10 @@ class DocumentsItem(QObject):
         else:
             return None
 
+    @pyqtProperty(bool, constant = True)
+    def settableAsDefault(self) -> bool:
+        return self.element.settable_as_default
+
     @pyqtProperty(QObject, constant = True)
     def childModel(self) -> DocumentsModel:
         return self._subModel
@@ -106,3 +107,7 @@ class DocumentsItem(QObject):
 
     def getPath(self) -> List[str]:
         return self._path
+
+    @pyqtSlot()
+    def setAsDefault(self) -> None:
+        self.element.setAsDefault()

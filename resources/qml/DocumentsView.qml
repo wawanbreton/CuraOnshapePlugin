@@ -72,6 +72,15 @@ Item
     Component.onCompleted: loadDocumentsIfVisible()
     onVisibleChanged: loadDocumentsIfVisible()
 
+    StackView.onRemoved:
+    {
+        if(documentsModel.isSearchModel())
+        {
+            searchBar.clear();
+        }
+        destroy();
+    }
+
     function loadDocumentsIfVisible() { if(visible) { documentsModel.load() } }
 }
 

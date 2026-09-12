@@ -18,6 +18,7 @@ Window
     height: 768 * screenScaleFactor
     minimumWidth: 800 * screenScaleFactor
     minimumHeight: 600 * screenScaleFactor
+    color: UM.Theme.getColor("main_background")
 
     UM.I18nCatalog{id: catalog; name:"onshape"}
 
@@ -26,7 +27,6 @@ Window
         sequence: "Esc"
         onActivated: root.close()
     }
-    color: UM.Theme.getColor("main_background")
 
     ConnectionItem
     {
@@ -51,15 +51,32 @@ Window
                 documentsModel: documentsListStack.currentItem.documentsModel
             }
 
+            SearchBar
+            {
+                id: searchBar
+                Layout.fillWidth: true
+                enabled: documentsListStack.currentItem.documentsModel.isSearchable
+            }
+
             StackView
             {
                 id: documentsListStack
                 Layout.fillHeight: true
                 Layout.fillWidth: true
 
-                initialItem: DocumentsView
+                Component
                 {
-                    documentsModel: controller.documentsModel
+                    id: initialItemsComponent
+                    DocumentsView { }
+                }
+
+                Component.onCompleted:
+                {
+                    push(initialItemsComponent.createObject(documentsListStack, {"documentsModel": controller.rootDocumentsModel}))
+                    if(controller.defaultDocumentsModel !== controller.rootDocumentsModel)
+                    {
+                        push(initialItemsComponent.createObject(documentsListStack, {"documentsModel": controller.defaultDocumentsModel}))
+                    }
                 }
             }
 

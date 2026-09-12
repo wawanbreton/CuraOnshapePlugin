@@ -2,13 +2,14 @@
 
 from typing import TYPE_CHECKING, List, Optional
 
-from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QAbstractListModel, QModelIndex, Qt
-from PyQt6.QtNetwork import QNetworkRequest
+from PyQt6.QtCore import pyqtProperty, pyqtSignal, pyqtSlot, QObject, QAbstractListModel, QModelIndex, Qt
+
+from UM.Logger import Logger
+from ..data.DocumentsTreeNode import DocumentsTreeNode
+from ..data.SearchResult import SearchResult
 
 if TYPE_CHECKING:
     from PyQt6.QtNetwork import QNetworkReply
-    from ..data.DocumentsTreeNode import DocumentsTreeNode
-    from ..data.Root import Root
     from ..api.OnshapeApi import OnshapeApi
     from ..DocumentsItem import DocumentsItem
 
@@ -25,13 +26,15 @@ class DocumentsModel(QAbstractListModel):
         self._items: List["DocumentsItem"] = []
         self._path: List[str] = path + [self._node.element.name]
         self._load_error: Optional[str] = None
-        self._has_more_pages: bool = False
+        self._search_model: Optional["DocumentsModel"] = None
         self._is_loading_next_page: bool = False
-        self._next_page_offset: int = 0
+        self._url_load_next_page: Optional[str] = None
+        self._request_body: Optional[str] = None
 
         if self.loaded:
             self._updateItems()
 
+    @pyqtSlot()
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         if parent.isValid():
             return 0
@@ -98,11 +101,11 @@ class DocumentsModel(QAbstractListModel):
 
     @pyqtProperty(bool, notify = hasMorePagesChanged)
     def hasMorePages(self) -> bool:
-        return self._has_more_pages
+        return self._url_load_next_page is not None
 
-    def _setHasMorePages(self, value: bool) -> None:
-        if value != self._has_more_pages:
-            self._has_more_pages = value
+    def _setUrlLoadNextPage(self, url_load_next_page: Optional[str]):
+        if url_load_next_page != self._url_load_next_page:
+            self._url_load_next_page = url_load_next_page
             self.hasMorePagesChanged.emit()
 
     isLoadingNextPageChanged = pyqtSignal()
@@ -118,11 +121,11 @@ class DocumentsModel(QAbstractListModel):
 
     @pyqtSlot()
     def load(self) -> None:
-        def on_finished(children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
+        def on_finished(children: List["DocumentsTreeNode"], url_load_next_page: Optional[str], request_body: Optional[str]):
             self._node.setChildren(children)
-            self._next_page_offset = document_count
+            self._setUrlLoadNextPage(url_load_next_page)
+            self._request_body = request_body
             self.loadedChanged.emit()
-            self._setHasMorePages(has_more)
             self._updateItems()
 
         def on_error(request: "QNetworkReply", error: "QNetworkReply.NetworkError"):
@@ -138,18 +141,18 @@ class DocumentsModel(QAbstractListModel):
     @pyqtSlot()
     def loadNextPage(self) -> None:
         """Loads the next page of items and appends them to the existing list"""
-        if not self._has_more_pages or self._is_loading_next_page:
+        if self._url_load_next_page is None or self._is_loading_next_page:
             return
 
         self._setIsLoadingNextPage(True)
 
-        def on_finished(new_children: List["DocumentsTreeNode"], has_more: bool, document_count: int):
+        def on_finished(new_children: List["DocumentsTreeNode"], url_load_next_page: Optional[str], request_body: Optional[str]):
             for child in new_children:
                 self._node.addChild(child)
 
-            self._next_page_offset += document_count
+            self._setUrlLoadNextPage(url_load_next_page)
+            self._request_body = request_body
             self._setIsLoadingNextPage(False)
-            self._setHasMorePages(has_more)
             self._appendItems(new_children)
 
         def on_error(request: "QNetworkReply", error: "QNetworkReply.NetworkError"):
@@ -157,11 +160,7 @@ class DocumentsModel(QAbstractListModel):
             self._load_error = request.errorString() + bytes(request.readAll()).decode()
             self.errorChanged.emit()
 
-        self._node.element.loadChildren(self._api, on_finished, on_error, self._next_page_offset)
-
-    @pyqtProperty(bool, constant = True)
-    def refreshable(self) -> bool:
-        return self._node.element.is_refreshable
+        self._api.loadElements(self._url_load_next_page, on_finished, on_error, self._request_body)
 
     def clear(self) -> None:
         self.beginResetModel()
@@ -170,15 +169,13 @@ class DocumentsModel(QAbstractListModel):
         self._next_page_offset = 0
         self.endResetModel()
 
-        self._setHasMorePages(False)
+        self._setUrlLoadNextPage(None)
         self._setIsLoadingNextPage(False)
+        self._request_body = None
 
         self._load_error = None
         self.errorChanged.emit()
         self.loadedChanged.emit()
-
-        if isinstance(self._node.element, Root):
-            self._api.clearFolderCache()
 
     @pyqtSlot()
     def refresh(self) -> None:
@@ -190,3 +187,21 @@ class DocumentsModel(QAbstractListModel):
     @pyqtProperty(list, notify = selectedItemsChanged)
     def selectedItems(self) -> List["DocumentsItem"]:
         return [item for item in self._items if item.selected]
+
+    @pyqtSlot(result = bool)
+    def isSearchModel(self) -> bool:
+        return isinstance(self._node.element, SearchResult)
+
+    @pyqtSlot(str, result = QObject)
+    def searchModel(self, search_query: str) -> "DocumentsModel":
+        self._search_model = DocumentsModel(DocumentsTreeNode(SearchResult(search_query, self._node.element)), self._api, self._path)
+        return self._search_model
+
+    @pyqtSlot(str)
+    def newSearch(self, search_query: str) -> None:
+        self._node.element.search_query = search_query
+        self.refresh()
+
+    @pyqtProperty(bool, constant = True)
+    def isSearchable(self) -> bool:
+        return self._node.element.is_searchable

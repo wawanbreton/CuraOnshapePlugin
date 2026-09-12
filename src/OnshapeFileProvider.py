@@ -1,6 +1,6 @@
 # Copyright (c) 2023 Erwan MATHIEU
 
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 import os
 
@@ -17,6 +17,7 @@ from .api.OnshapeApi import OnshapeApi
 
 if TYPE_CHECKING:
     from cura.CuraApplication import CuraApplication
+    from PyQt6.QtCore import QObject
 
 
 class OnshapeFileProvider(FileProvider):
@@ -34,7 +35,6 @@ class OnshapeFileProvider(FileProvider):
 
         dir_path = os.path.dirname(__file__)
         dir_path = os.path.join(dir_path, '..')
-        print(os.path.abspath(dir_path))
         Resources.addSearchPath(os.path.abspath(dir_path))
 
         if i18n_catalog.hasTranslationLoaded():
@@ -43,6 +43,7 @@ class OnshapeFileProvider(FileProvider):
             Logger.warning("OnShape Plugin translation not loaded")
 
         application.getPreferences().addPreference("plugin_onshape/tesselation_resolution", "moderate")
+        application.getPreferences().addPreference("plugin_onshape/default_storage", "")
 
         self._application: "CuraApplication" = application
         self._auth_controller: OAuthController = OAuthController(self._application)
@@ -53,12 +54,15 @@ class OnshapeFileProvider(FileProvider):
         self._auth_controller.tokenChanged.connect(self._onTokenChanged)
         self._controller.partSelected.connect(self._onPartSelected)
 
+        self._dialog: Optional['QObject'] = None
+
     def run(self) -> None:
         """Main entry point called by the application when the users asks for opening Onshape"""
-        plugin_path = os.path.dirname(os.path.dirname(__file__))
-        dialog_path = os.path.join(plugin_path, 'resources', 'qml', 'MainDialog.qml')
-        self._dialog = self._application.createQmlComponent(dialog_path,
-                                                            {'controller': self._controller})
+        if self._dialog is None:
+            plugin_path = os.path.dirname(os.path.dirname(__file__))
+            dialog_path = os.path.join(plugin_path, 'resources', 'qml', 'MainDialog.qml')
+            self._dialog = self._application.createQmlComponent(dialog_path, {'controller': self._controller})
+
         self._dialog.show()
 
     @pyqtSlot(str)
