@@ -53,6 +53,9 @@ class OnshapeFileProvider(FileProvider):
         self._auth_controller.tokenChanged.connect(self._onTokenChanged)
         self._controller.partSelected.connect(self._onPartSelected)
 
+        scene = self._application.getController().getScene()
+        self._controller.hookScene(scene)
+
     def run(self) -> None:
         """Main entry point called by the application when the users asks for opening Onshape"""
         plugin_path = os.path.dirname(os.path.dirname(__file__))
