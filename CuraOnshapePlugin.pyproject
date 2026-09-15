@@ -17,6 +17,7 @@
         "src/data/Folder.py",
         "src/data/StorageElement.py",
         "src/data/Workspace.py",
+        "src/data/OnshapeObjectDecorator.py",
         "src/data/__init__.py",
         "src/data/DocumentsTreeNode.py",
         "resources/qml/LoadingItem.qml",
