@@ -11,7 +11,7 @@ class Part(BaseElement):
     def __init__(self, data: Dict[str, Any], document_id: str, workspace_id: str, tab_id: str, configuration: Optional[str]):
         super().__init__(name = data['name'],
                          id = data['partId'],
-                         thumbnail_url = self._findThumbnailUrl(data['thumbnailInfo']['sizes']),
+                         thumbnail_url = self._findThumbnailUrl(data.get('thumbnailInfo', {}).get('sizes', [])),
                          has_children = False,
                          is_downloadable = True)
         self.document_id: str = document_id

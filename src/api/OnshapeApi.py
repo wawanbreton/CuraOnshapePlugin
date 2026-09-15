@@ -238,6 +238,42 @@ class OnshapeApi(QObject):
                        error_callback = on_error,
                        timeout = self.DEFAULT_REQUEST_TIMEOUT)
 
+    def loadPartShadedView(self,
+                           document_id: str,
+                           workspace_id: str,
+                           tab_id: str,
+                           part_id: str,
+                           configuration: str,
+                           on_finished: Callable[[str], None],
+                           on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        """Retrieves a shaded view image for a specific part with configuration."""
+        def response_received(reply: 'QNetworkReply'):
+            try:
+                data = json.loads(bytes(reply.readAll()).decode('utf-8'))
+                if 'images' in data and len(data['images']) > 0:
+                    on_finished(f"data:image/png;base64,{data['images'][0]}")
+                else:
+                    on_error(reply, None)
+            except Exception:
+                on_error(reply, None)
+
+        url = QUrl(f'{self.API_ROOT}/parts/d/{document_id}/w/{workspace_id}/e/{tab_id}/partid/{part_id}/shadedviews')
+        query = QUrlQuery()
+        # Top-Front-Right Isometric projection looking down at the part
+        query.addQueryItem('viewMatrix', '0.707107,0.707107,0,0,-0.408248,0.408248,0.816497,0,0.57735,-0.57735,0.57735,0')
+        query.addQueryItem('outputHeight', '300')
+        query.addQueryItem('outputWidth', '300')
+        query.addQueryItem('pixelSize', '0')
+        query.addQueryItem('edges', 'show')
+        query.addQueryItem('configuration', configuration)
+        url.setQuery(query)
+
+        self._http.get(url,
+                       scope = self._json_scope,
+                       callback = response_received,
+                       error_callback = on_error,
+                       timeout = self.DEFAULT_REQUEST_TIMEOUT)
+
     def downloadParts(self,
                       document_id: str,
                       workspace_id: str,

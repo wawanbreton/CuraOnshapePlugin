@@ -7,6 +7,7 @@ from PyQt6.QtCore import QObject, pyqtProperty, pyqtSignal
 from UM.Logger import Logger
 
 from .DocumentsModel import DocumentsModel
+from ..data.Part import Part
 
 if TYPE_CHECKING:
     from PyQt6.QtCore import QByteArray
@@ -45,25 +46,48 @@ class DocumentsItem(QObject):
     def _onThumbnailError(self, request: "QNetworkReply", error: "QNetworkReply.NetworkError") -> None:
         Logger.warning(f'Error when retrieving thumbnail: {error}')
 
+    def _fetchThumbnail(self) -> None:
+        if isinstance(self.element, Part) and self.element.configuration:
+            def on_shaded_view_received(image_data: str) -> None:
+                self._thumbnail_str_data = image_data
+                self.iconChanged.emit()
+
+            def on_shaded_view_error(request: "QNetworkReply", error: Optional["QNetworkReply.NetworkError"]) -> None:
+                if self.element.thumbnail_url is not None:
+                    self._api.loadThumbnail(self.element.thumbnail_url,
+                                            self._onThumbnailReceived,
+                                            self._onThumbnailError)
+
+            self._api.loadPartShadedView(
+                self.element.document_id,
+                self.element.workspace_id,
+                self.element.tab_id,
+                self.element.id,
+                self.element.configuration,
+                on_shaded_view_received,
+                on_shaded_view_error
+            )
+        elif self.element.thumbnail_url is not None:
+            self._api.loadThumbnail(self.element.thumbnail_url,
+                                    self._onThumbnailReceived,
+                                    self._onThumbnailError)
+
     @pyqtProperty(str, notify = iconChanged)
     def icon(self) -> str:
-        if self.element.hasThumbnail():
+        if self.element.hasThumbnail() or (isinstance(self.element, Part) and self.element.configuration):
             if self._thumbnail_str_data is not None:
                 return self._thumbnail_str_data
             else:
                 if not self._thumbnail_downloaded:
                     self._thumbnail_downloaded = True
-                    if self.element.thumbnail_url is not None:
-                        self._api.loadThumbnail(self.element.thumbnail_url,
-                                                self._onThumbnailReceived,
-                                                self._onThumbnailError)
+                    self._fetchThumbnail()
                 return None
         else:
             return self.element.icon
 
     @pyqtProperty(bool, constant = True)
     def hasThumbnail(self) -> bool:
-        return self.element.hasThumbnail()
+        return self.element.hasThumbnail() or (isinstance(self.element, Part) and self.element.configuration is not None)
 
     @pyqtProperty(bool, constant = True)
     def hasChildren(self) -> bool:
