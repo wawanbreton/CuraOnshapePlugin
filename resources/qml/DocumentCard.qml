@@ -89,48 +89,10 @@ MouseArea
 
             ColumnLayout
             {
-                id: configurationColumn
-                visible: modelData.hasConfigurationParameters
-                Layout.preferredWidth: Math.min(430, Math.max(300, root.width * 0.42))
-                Layout.rightMargin: UM.Theme.getSize("default_margin").width
-                Layout.alignment: Qt.AlignVCenter
-                spacing: UM.Theme.getSize("narrow_margin").height
-
-                Repeater
-                {
-                    model: modelData.configurationParameters
-
-                    ColumnLayout
-                    {
-                        Layout.fillWidth: true
-                        spacing: UM.Theme.getSize("narrow_margin").height
-
-                        UM.Label
-                        {
-                            Layout.fillWidth: true
-                            text: modelData.name
-                            font: UM.Theme.getFont("small")
-                            elide: Text.ElideRight
-                        }
-
-                        ComboBox
-                        {
-                            model: modelData.options
-                            textRole: "name"
-                            currentIndex: modelData.selectedIndex
-                            onActivated: modelData.selectedIndex = index
-                        }
-                    }
-                }
-            }
-
-            ColumnLayout
-            {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.minimumWidth: 140
-
-                spacing: UM.Theme.getSize("narrow_margin").width
+                Layout.alignment: Qt.AlignVCenter
+                spacing: UM.Theme.getSize("narrow_margin").height
 
                 UM.Label
                 {
@@ -141,10 +103,47 @@ MouseArea
                     font: UM.Theme.getFont("medium_bold")
                 }
 
+                ColumnLayout
+                {
+                    id: configurationColumn
+                    visible: modelData.hasConfigurationParameters
+                    Layout.fillWidth: true
+                    Layout.maximumWidth: 430
+                    spacing: UM.Theme.getSize("narrow_margin").height
+
+                    Repeater
+                    {
+                        model: modelData.configurationParameters
+
+                        ColumnLayout
+                        {
+                            Layout.fillWidth: true
+                            spacing: UM.Theme.getSize("narrow_margin").height
+
+                            UM.Label
+                            {
+                                Layout.fillWidth: true
+                                text: modelData.name
+                                font: UM.Theme.getFont("small")
+                                elide: Text.ElideRight
+                            }
+
+                            ComboBox
+                            {
+                                model: modelData.options
+                                textRole: "name"
+                                currentIndex: modelData.selectedIndex
+                                onActivated: modelData.selectedIndex = index
+                            }
+                        }
+                    }
+                }
+
                 UM.Label
                 {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignLeft
+                    visible: text.length > 0
 
                     font: UM.Theme.getFont("default")
                     text:
