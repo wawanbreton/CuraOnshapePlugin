@@ -35,35 +35,77 @@ Item
             visible: documentsModel.hasError
         }
 
-        ListView
+        ColumnLayout
         {
-            id: listView
             anchors.fill: parent
             anchors.margins: UM.Theme.getSize("default_margin").width
-            spacing: UM.Theme.getSize("default_margin").height
-            model: documentsModel
             visible: documentsModel.loaded && !documentsModel.hasError
-            clip: true
+            spacing: UM.Theme.getSize("default_margin").height
 
-            ScrollBar.vertical: UM.ScrollBar { id: verticalScrollBar }
-
-            footer: LoadingItem
+            ColumnLayout
             {
-                width: listView.width
-                height: UM.Theme.getSize("card_icon").height * root.iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height
-                visible: documentsModel.hasMorePages || documentsModel.isLoadingNextPage
+                visible: documentsModel.hasConfigurationParameters
+                Layout.fillWidth: true
+                spacing: UM.Theme.getSize("narrow_margin").height
+
+                Repeater
+                {
+                    model: documentsModel.configurationParameters
+
+                    ColumnLayout
+                    {
+                        Layout.fillWidth: true
+                        Layout.maximumWidth: 430
+                        spacing: UM.Theme.getSize("narrow_margin").height
+
+                        UM.Label
+                        {
+                            Layout.fillWidth: true
+                            text: modelData.name
+                            font: UM.Theme.getFont("small")
+                            elide: Text.ElideRight
+                        }
+
+                        ComboBox
+                        {
+                            model: modelData.options
+                            textRole: "name"
+                            currentIndex: modelData.selectedIndex
+                            onActivated: modelData.selectedIndex = index
+                        }
+                    }
+                }
             }
 
-            delegate: DocumentCard { }
-
-            onContentYChanged:
+            ListView
             {
-                // When the user scrolls close to the bottom, load the next page
-                var threshold = UM.Theme.getSize("card_icon").height * root.iconSizeFactor * 2
-                if (documentsModel.hasMorePages && !documentsModel.isLoadingNextPage &&
-                    contentY + height >= contentHeight - threshold)
+                id: listView
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                spacing: UM.Theme.getSize("default_margin").height
+                model: documentsModel
+                clip: true
+
+                ScrollBar.vertical: UM.ScrollBar { id: verticalScrollBar }
+
+                footer: LoadingItem
                 {
-                    documentsModel.loadNextPage()
+                    width: listView.width
+                    height: UM.Theme.getSize("card_icon").height * root.iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height
+                    visible: documentsModel.hasMorePages || documentsModel.isLoadingNextPage
+                }
+
+                delegate: DocumentCard { }
+
+                onContentYChanged:
+                {
+                    // When the user scrolls close to the bottom, load the next page
+                    var threshold = UM.Theme.getSize("card_icon").height * root.iconSizeFactor * 2
+                    if (documentsModel.hasMorePages && !documentsModel.isLoadingNextPage &&
+                        contentY + height >= contentHeight - threshold)
+                    {
+                        documentsModel.loadNextPage()
+                    }
                 }
             }
         }

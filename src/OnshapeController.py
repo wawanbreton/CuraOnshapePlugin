@@ -38,6 +38,7 @@ class OnshapeController(QObject):
         self._logged_in: bool = False
         self._temp_files: List[str] = []
         self._pending_parts: Dict[str, Dict] = {}
+        self._original_reload_nodes: Optional[Callable] = None
 
         application = CuraApplication.getInstance()
 
@@ -197,7 +198,11 @@ class OnshapeController(QObject):
 
     def hookScene(self, scene) -> None:
         """Hooks into Scene.reloadNodes to intercept reloads of Onshape models."""
-        original_reload_nodes = scene.reloadNodes
+        original_reload_nodes = getattr(scene, "reloadNodes", None)
+        if not callable(original_reload_nodes) or self._original_reload_nodes is not None:
+            return
+
+        self._original_reload_nodes = original_reload_nodes
 
         def custom_reload_nodes(nodes: List, file_path: str, on_done: Optional[Callable] = None) -> None:
             onshape_nodes: List[Tuple] = []
@@ -214,11 +219,11 @@ class OnshapeController(QObject):
                 original_reload_nodes(regular_nodes, file_path, on_done)
 
             if onshape_nodes:
-                self._reloadOnshapeNodes(scene, original_reload_nodes, onshape_nodes, on_done)
+                self._reloadOnshapeNodes(original_reload_nodes, onshape_nodes, on_done)
 
         scene.reloadNodes = custom_reload_nodes
 
-    def _reloadOnshapeNodes(self, scene, original_reload_nodes: Callable, onshape_nodes: List[Tuple], on_done: Optional[Callable] = None) -> None:
+    def _reloadOnshapeNodes(self, original_reload_nodes: Callable, onshape_nodes: List[Tuple], on_done: Optional[Callable] = None) -> None:
         grouped: Dict[Tuple[str, str, str, Tuple[str, ...], Optional[str], str], List] = {}
         for node, dec in onshape_nodes:
             key = (
@@ -284,5 +289,5 @@ class OnshapeController(QObject):
             if decorator is not None and node.getMeshData() is not None:
                 onshape_nodes.append((node, decorator))
 
-        if onshape_nodes:
-            self._reloadOnshapeNodes(scene, scene.reloadNodes, onshape_nodes)
+        if onshape_nodes and self._original_reload_nodes is not None:
+            self._reloadOnshapeNodes(self._original_reload_nodes, onshape_nodes)

@@ -160,4 +160,4 @@ cython_debug/
 
 # Files generated at runtime
 resources/auth.json
-
+resources/auth_key

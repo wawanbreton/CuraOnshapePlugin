@@ -27,15 +27,13 @@ MouseArea
 
         return width
     }
-    implicitHeight: Math.max(UM.Theme.getSize("card_icon").height * iconSizeFactor,
-                             configurationColumn.visible ? configurationColumn.implicitHeight : 0)
-                    + 2 * UM.Theme.getSize("default_margin").height
+    implicitHeight: UM.Theme.getSize("card_icon").height * iconSizeFactor + 2 * UM.Theme.getSize("default_margin").height
 
     hoverEnabled: true
     enabled: modelData.hasChildren || modelData.isDownloadable // Should actually always be true...
     onClicked:
     {
-        if(isInside(configurationColumn, mouse.x, mouse.y) || isInside(checkBoxSelected, mouse.x, mouse.y))
+        if(isInside(checkBoxSelected, mouse.x, mouse.y))
         {
             return
         }
@@ -94,42 +92,6 @@ MouseArea
 
                     text: modelData.name
                     font: UM.Theme.getFont("medium_bold")
-                }
-
-                ColumnLayout
-                {
-                    id: configurationColumn
-                    visible: modelData.hasConfigurationParameters
-                    Layout.fillWidth: true
-                    Layout.maximumWidth: 430
-                    spacing: UM.Theme.getSize("narrow_margin").height
-
-                    Repeater
-                    {
-                        model: modelData.configurationParameters
-
-                        ColumnLayout
-                        {
-                            Layout.fillWidth: true
-                            spacing: UM.Theme.getSize("narrow_margin").height
-
-                            UM.Label
-                            {
-                                Layout.fillWidth: true
-                                text: modelData.name
-                                font: UM.Theme.getFont("small")
-                                elide: Text.ElideRight
-                            }
-
-                            ComboBox
-                            {
-                                model: modelData.options
-                                textRole: "name"
-                                currentIndex: modelData.selectedIndex
-                                onActivated: modelData.selectedIndex = index
-                            }
-                        }
-                    }
                 }
 
                 UM.Label

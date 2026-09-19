@@ -63,7 +63,7 @@ class DocumentsModel(QAbstractListModel):
         """Replaces the entire item list (used for the initial load and clear)."""
         from .DocumentsItem import DocumentsItem
         self.beginResetModel()
-        self._items = [DocumentsItem(child, self._api, self._path, self) for child in self._node.children]
+        self._items = [DocumentsItem(child, self._api, self._path) for child in self._node.children]
         self.endResetModel()
 
         for item in self._items:
@@ -75,7 +75,7 @@ class DocumentsModel(QAbstractListModel):
         """Appends new items at the end of the list without resetting the view."""
         from .DocumentsItem import DocumentsItem
         first = len(self._items)
-        new_items = [DocumentsItem(child, self._api, self._path, self) for child in new_children]
+        new_items = [DocumentsItem(child, self._api, self._path) for child in new_children]
 
         self.beginInsertRows(QModelIndex(), first, first + len(new_items) - 1)
         self._items.extend(new_items)
