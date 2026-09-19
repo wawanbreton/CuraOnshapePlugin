@@ -38,7 +38,7 @@ Item
         anchors.bottom: parent.bottom
         anchors.margins: UM.Theme.getSize("default_margin").height
         text: catalog.i18nc("@action:button", "Refresh")
-        enabled: documentsListStack.currentItem.documentsModel.loaded && documentsListStack.currentItem.documentsModel.refreshable
+        enabled: documentsListStack.currentItem.documentsModel.loaded
         onClicked: documentsListStack.currentItem.documentsModel.refresh()
     }
 }

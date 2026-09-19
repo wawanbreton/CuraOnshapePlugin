@@ -40,14 +40,7 @@ MouseArea
             return
         }
 
-        if(modelData.hasChildren)
-        {
-            documentsListStack.push("DocumentsView.qml", {"documentsModel": modelData.childModel})
-        }
-        else if(modelData.isDownloadable)
-        {
-            modelData.selected = !modelData.selected
-        }
+        trigger()
     }
 
     Rectangle
@@ -178,6 +171,33 @@ MouseArea
                 checked: modelData.selected
                 onClicked: modelData.selected = checked
             }
+        }
+
+        Cura.PrimaryButton
+        {
+            id: buttonSetAsDefault
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: UM.Theme.getSize("default_margin").height
+            text: catalog.i18nc("@action:button", "Open and set as default")
+            visible: modelData.settableAsDefault
+            onClicked:
+            {
+                modelData.setAsDefault();
+                root.trigger();
+            }
+        }
+    }
+
+    function trigger()
+    {
+        if(modelData.hasChildren)
+        {
+            documentsListStack.push("DocumentsView.qml", {"documentsModel": modelData.childModel})
+        }
+        else if(modelData.isDownloadable)
+        {
+            modelData.selected = !modelData.selected
         }
     }
 

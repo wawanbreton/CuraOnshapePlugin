@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, List, Dict, Tuple, Optional, Callable
 import os
 import math
 import functools
+import json
 
 from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot, pyqtProperty, QUrl
 
@@ -14,6 +15,7 @@ from UM.Message import Message
 from UM.Scene.Iterator.DepthFirstIterator import DepthFirstIterator
 
 from .model.DocumentsModel import DocumentsModel
+from . import data as data_module
 from .data.Root import Root
 from .data.DocumentsTreeNode import DocumentsTreeNode
 from .data.OnshapeObjectDecorator import OnshapeObjectDecorator
@@ -34,12 +36,27 @@ class OnshapeController(QObject):
         self._auth_controller: "OAuthController" = auth_controller
         self._api: "OnshapeApi" = api
         self._logged_in: bool = False
-        self._documents_model: DocumentsModel = DocumentsModel(DocumentsTreeNode(Root()), self._api, [])
         self._temp_files: List[str] = []
         self._pending_parts: Dict[str, Dict] = {}
 
-        CuraApplication.getInstance().fileLoaded.connect(self._onFileLoaded)
-        CuraApplication.getInstance().getController().getScene().sceneChanged.connect(self._onSceneChanged)
+        application = CuraApplication.getInstance()
+
+        root_node = DocumentsTreeNode(Root())
+        self._root_documents_model: DocumentsModel = DocumentsModel(root_node, self._api, [])
+        self._default_documents_model: DocumentsModel = self._root_documents_model
+
+        default_storage = application.getPreferences().getValue('plugin_onshape/default_storage')
+        if default_storage != '':
+            storage_data = json.loads(default_storage)
+            default_storage_type = storage_data["type"]
+            element_class = getattr(getattr(data_module, default_storage_type), default_storage_type)
+            default_storage_node = DocumentsTreeNode(element_class(storage_data))
+            self._default_documents_model = DocumentsModel(default_storage_node, self._api, [''])
+            root_node.addChild(default_storage_node)
+            root_node.children_loaded = False
+
+        application.fileLoaded.connect(self._onFileLoaded)
+        application.getController().getScene().sceneChanged.connect(self._onSceneChanged)
 
     loggedInChanged = pyqtSignal()
 
@@ -55,15 +72,21 @@ class OnshapeController(QObject):
         return self._logged_in
 
     @pyqtProperty(QObject, constant = True)
-    def documentsModel(self) -> DocumentsModel:
-        return self._documents_model
+    def rootDocumentsModel(self) -> DocumentsModel:
+        return self._root_documents_model
+
+    @pyqtProperty(QObject, constant = True)
+    def defaultDocumentsModel(self) -> DocumentsModel:
+        return self._default_documents_model
 
     @pyqtSlot()
     def login(self) -> None:
         self._logged_in = False
         self.loggedInChanged.emit()
 
-        self._documents_model.clear()
+        self._root_documents_model.clear()
+        if self._default_documents_model != self._root_documents_model:
+            self._default_documents_model.clear()
 
         self._auth_controller.login()
 
@@ -71,7 +94,6 @@ class OnshapeController(QObject):
         if file_path in self._temp_files:
             os.remove(file_path)
             self._temp_files.remove(file_path)
-            print("File removed ", file_path)
 
     def _onSceneChanged(self, *args) -> None:
         for changed_node in args:

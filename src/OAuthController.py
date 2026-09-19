@@ -64,14 +64,15 @@ class OAuthController(QObject):
         self._refresh_timer.timeout.connect(self._refreshTokenIfNeeded)
         self._refresh_timer.start(10000)
 
-        QtApplication.getInstance().callLater(self._loadAuthData)
+        self._application.callLater(self._loadAuthData)
 
     def login(self) -> None:
+        self._application.getPreferences().setValue('plugin_onshape/auth_data', '')
         self._authorization_service.startAuthorizationFlow()
 
     def _onLoginStateChanged(self, logged_in: bool, error_message: Optional[str] = None):
         if logged_in:
-            QtApplication.getInstance().getMainWindow().requestActivate()
+            self._application.getMainWindow().requestActivate()
 
     def _onAccessTokenChanged(self) -> None:
         self.tokenChanged.emit(self._authorization_service.getAccessToken())

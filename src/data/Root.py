@@ -14,12 +14,11 @@ class Root(BaseElement):
     """Pseudo-element which represents the root of the storag space"""
 
     def __init__(self):
-        super().__init__('', None)
+        super().__init__(None)
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
                       configuration: Optional[str],
-                      on_finished: Callable[[List['DocumentsTreeNode'], bool, int], None],
-                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None],
-                      offset: Optional[int] = None) -> None:
-        api.listDocuments(0 if offset is None else offset, on_finished, on_error)
+                      on_finished: Callable[[List['DocumentsTreeNode'], Optional[str], Optional[str]], None],
+                      on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        api.listStorages(on_finished, on_error)
