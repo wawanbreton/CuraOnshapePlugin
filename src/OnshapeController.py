@@ -12,13 +12,12 @@ from PyQt6.QtCore import pyqtSignal, QObject, pyqtSlot, pyqtProperty, QUrl
 from cura.CuraApplication import CuraApplication
 from cura.UI.PrintInformation import PrintInformation
 from UM.Message import Message
-from UM.Scene.Iterator.DepthFirstIterator import DepthFirstIterator
 
 from .model.DocumentsModel import DocumentsModel
 from . import data as data_module
 from .data.Root import Root
 from .data.DocumentsTreeNode import DocumentsTreeNode
-from .data.OnshapeObjectDecorator import OnshapeObjectDecorator
+from .OnshapeObjectDecorator import OnshapeObjectDecorator
 
 if TYPE_CHECKING:
     from OAuthController import OAuthController
@@ -57,7 +56,9 @@ class OnshapeController(QObject):
             root_node.children_loaded = False
 
         application.fileLoaded.connect(self._onFileLoaded)
-        application.getController().getScene().sceneChanged.connect(self._onSceneChanged)
+        scene = application.getController().getScene()
+        scene.sceneChanged.connect(self._onSceneChanged)
+        self._hookScene(scene)
 
     loggedInChanged = pyqtSignal()
 
@@ -111,25 +112,25 @@ class OnshapeController(QObject):
                     matched_key = mesh_file
 
                 if matched_key:
-                    meta = self._pending_parts.pop(matched_key)
+                    metadata = self._pending_parts.pop(matched_key)
                     self._pending_parts.pop(actual_name, None)
                     self._pending_parts.pop(mesh_file, None)
 
-                    changed_node.setName(meta["part_name"])
+                    changed_node.setName(metadata["part_name"])
                     changed_node.addDecorator(OnshapeObjectDecorator(
-                        document_id = meta["document_id"],
-                        workspace_id = meta["workspace_id"],
-                        tab_id = meta["tab_id"],
-                        part_ids = meta["part_ids"],
-                        configuration = meta["configuration"],
-                        part_name = meta["part_name"]
+                        document_id = metadata["document_id"],
+                        workspace_id = metadata["workspace_id"],
+                        tab_id = metadata["tab_id"],
+                        part_ids = metadata["part_ids"],
+                        configuration = metadata["configuration"],
+                        part_name = metadata["part_name"]
                     ))
 
     @staticmethod
     def _onMeshDownloadProgress(message: Message, transmitted: int, total: int) -> None:
         message.setProgress(math.floor(transmitted * 100.0 / total))
 
-    def _onMeshDownloaded(self, message: Message, meta: Dict, file_path: str):
+    def _onMeshDownloaded(self, message: Message, metadata: Dict, file_path: str):
         message.hide()
 
         # Save file name to delete the temp file once it has been loaded
@@ -138,8 +139,8 @@ class OnshapeController(QObject):
         # Save metadata to decorate the scene node once created
         base_name = os.path.basename(file_path)
         stem_name = os.path.splitext(base_name)[0]
-        self._pending_parts[base_name] = meta
-        self._pending_parts[stem_name] = meta
+        self._pending_parts[base_name] = metadata
+        self._pending_parts[stem_name] = metadata
 
         CuraApplication.getInstance().readLocalFile(QUrl.fromLocalFile(file_path), add_to_recent_files = False)
 
@@ -172,7 +173,7 @@ class OnshapeController(QObject):
 
             first_element = elements[0]
             part_ids = [element.id for element in elements]
-            meta = {
+            metadata = {
                 "part_name": first_element.name,
                 "document_id": first_element.document_id,
                 "workspace_id": first_element.workspace_id,
@@ -187,7 +188,7 @@ class OnshapeController(QObject):
                                     part_ids,
                                     first_element.configuration,
                                     functools.partial(OnshapeController._onMeshDownloadProgress, message),
-                                    functools.partial(self._onMeshDownloaded, message, meta),
+                                    functools.partial(self._onMeshDownloaded, message, metadata),
                                     functools.partial(OnshapeController._onMeshDownloadError, message))
 
             print_information = CuraApplication.getInstance().getPrintInformation()
@@ -196,7 +197,7 @@ class OnshapeController(QObject):
 
         self.partSelected.emit()
 
-    def hookScene(self, scene) -> None:
+    def _hookScene(self, scene) -> None:
         """Hooks into Scene.reloadNodes to intercept reloads of Onshape models."""
         original_reload_nodes = getattr(scene, "reloadNodes", None)
         if not callable(original_reload_nodes) or self._original_reload_nodes is not None:
@@ -225,14 +226,14 @@ class OnshapeController(QObject):
 
     def _reloadOnshapeNodes(self, original_reload_nodes: Callable, onshape_nodes: List[Tuple], on_done: Optional[Callable] = None) -> None:
         grouped: Dict[Tuple[str, str, str, Tuple[str, ...], Optional[str], str], List] = {}
-        for node, dec in onshape_nodes:
+        for node, decorator in onshape_nodes:
             key = (
-                dec.document_id,
-                dec.workspace_id,
-                dec.tab_id,
-                tuple(dec.part_ids),
-                dec.configuration,
-                dec.part_name
+                decorator.document_id,
+                decorator.workspace_id,
+                decorator.tab_id,
+                tuple(decorator.part_ids),
+                decorator.configuration,
+                decorator.part_name
             )
             if key not in grouped:
                 grouped[key] = []
@@ -253,18 +254,12 @@ class OnshapeController(QObject):
                 msg.hide()
 
                 def cleanup(*args, **kwargs) -> None:
-                    if on_done:
-                        try:
+                    try:
+                        if on_done:
                             on_done(*args, **kwargs)
-                        except TypeError:
-                            on_done()
-                        except Exception:
-                            pass
-                    if os.path.exists(new_temp_file):
-                        try:
+                    finally:
+                        if os.path.exists(new_temp_file):
                             os.remove(new_temp_file)
-                        except Exception:
-                            pass
 
                 original_reload_nodes(nodes_to_reload, new_temp_file, on_done = cleanup)
 
@@ -278,16 +273,3 @@ class OnshapeController(QObject):
                 functools.partial(on_download_finished, msg = message, nodes_to_reload = target_nodes),
                 functools.partial(OnshapeController._onMeshDownloadError, message)
             )
-
-    def reloadOnshapeModels(self) -> None:
-        """Finds all Onshape models on the build plate and re-downloads them from Onshape."""
-        scene = CuraApplication.getInstance().getController().getScene()
-
-        onshape_nodes: List[Tuple] = []
-        for node in DepthFirstIterator(scene.getRoot()):
-            decorator = node.getDecorator(OnshapeObjectDecorator)
-            if decorator is not None and node.getMeshData() is not None:
-                onshape_nodes.append((node, decorator))
-
-        if onshape_nodes and self._original_reload_nodes is not None:
-            self._reloadOnshapeNodes(self._original_reload_nodes, onshape_nodes)

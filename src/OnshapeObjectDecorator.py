@@ -25,19 +25,6 @@ class OnshapeObjectDecorator(SceneNodeDecorator):
         self.configuration: Optional[str] = configuration
         self.part_name: str = part_name
 
-    def isOnshapeObject(self) -> bool:
-        return True
-
-    def getOnshapeMetadata(self) -> Dict:
-        return {
-            "document_id": self.document_id,
-            "workspace_id": self.workspace_id,
-            "tab_id": self.tab_id,
-            "part_ids": self.part_ids,
-            "configuration": self.configuration,
-            "part_name": self.part_name
-        }
-
     def __deepcopy__(self, memo: Dict[int, object]) -> "OnshapeObjectDecorator":
         return OnshapeObjectDecorator(
             self.document_id,

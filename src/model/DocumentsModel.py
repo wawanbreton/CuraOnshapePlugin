@@ -8,7 +8,6 @@ from UM.Logger import Logger
 from ..data.DocumentsTreeNode import DocumentsTreeNode
 from ..data.SearchResult import SearchResult
 
-from ..data.Root import Root
 from .ConfigurationParameter import ConfigurationParameter
 
 if TYPE_CHECKING:
@@ -102,9 +101,6 @@ class DocumentsModel(QAbstractListModel):
     def hasConfigurationParameters(self) -> bool:
         return len(self._configuration_parameters) > 0
 
-    @pyqtProperty(bool, constant = True)
-    def isRoot(self) -> bool:
-        return isinstance(self._node.element, Root)
     errorChanged = pyqtSignal()
 
     @pyqtProperty(bool, notify = errorChanged)
@@ -164,9 +160,9 @@ class DocumentsModel(QAbstractListModel):
             self._node.element.loadChildren(self._api, self._buildConfigurationString(), on_finished, on_error)
 
     def _loadConfiguration(self) -> None:
-        def on_finished(configuration: dict):
+        def on_finished(configuration: List[dict]):
             self._configuration_loaded = True
-            self._configuration_parameters = self._createConfigurationParameters(configuration)
+            self._configuration_parameters = [ConfigurationParameter(parameter) for parameter in configuration]
 
             for parameter in self._configuration_parameters:
                 parameter.selectedIndexChanged.connect(self._onConfigurationParameterChanged)
@@ -179,20 +175,6 @@ class DocumentsModel(QAbstractListModel):
             self.errorChanged.emit()
 
         self._node.element.loadConfiguration(self._api, on_finished, on_error)
-
-    def _createConfigurationParameters(self, configuration: dict) -> List[ConfigurationParameter]:
-        current_values = {
-            parameter['parameterId']: parameter.get('value')
-            for parameter in configuration.get('currentConfiguration', [])
-            if 'parameterId' in parameter
-        }
-
-        return [
-            ConfigurationParameter(parameter, current_values.get(parameter['parameterId']))
-            for parameter in configuration.get('configurationParameters', [])
-            if 'parameterId' in parameter and len(parameter.get('options', [])) > 0
-               and parameter.get('isVisible', True)
-        ]
 
     def _buildConfigurationString(self) -> Optional[str]:
         values = [

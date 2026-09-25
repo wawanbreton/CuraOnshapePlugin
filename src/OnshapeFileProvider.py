@@ -54,9 +54,6 @@ class OnshapeFileProvider(FileProvider):
         self._auth_controller.tokenChanged.connect(self._onTokenChanged)
         self._controller.partSelected.connect(self._onPartSelected)
 
-        scene = self._application.getController().getScene()
-        self._controller.hookScene(scene)
-
         self._dialog: Optional['QObject'] = None
 
     def run(self) -> None:

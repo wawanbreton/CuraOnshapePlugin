@@ -36,7 +36,7 @@ class OAuthController(QObject):
             if encryption_key.startswith('__'):
                 # Dev mode
                 auth_key_path = os.path.join(os.path.dirname(__file__), '..', 'resources', 'auth_key')
-                encryption_key = open(auth_key_path, 'r', encoding='utf-8').read().strip()
+                encryption_key = open(auth_key_path, 'r').read()
 
             secrets_decrypted = xor_encrypt_decrypt(secrets_file.read(), encryption_key.encode('utf-8'))
             json_data = json.loads(secrets_decrypted.decode("utf-8"))

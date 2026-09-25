@@ -31,15 +31,7 @@ MouseArea
 
     hoverEnabled: true
     enabled: modelData.hasChildren || modelData.isDownloadable // Should actually always be true...
-    onClicked:
-    {
-        if(isInside(checkBoxSelected, mouse.x, mouse.y))
-        {
-            return
-        }
-
-        trigger()
-    }
+    onClicked: trigger()
 
     Rectangle
     {
@@ -82,8 +74,8 @@ MouseArea
             {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                Layout.alignment: Qt.AlignVCenter
-                spacing: UM.Theme.getSize("narrow_margin").height
+
+                spacing: UM.Theme.getSize("narrow_margin").width
 
                 UM.Label
                 {
@@ -98,7 +90,6 @@ MouseArea
                 {
                     Layout.fillWidth: true
                     Layout.alignment: Qt.AlignLeft
-                    visible: text.length > 0
 
                     font: UM.Theme.getFont("default")
                     text:
@@ -122,17 +113,18 @@ MouseArea
                     }
                 }
             }
+        }
 
-            UM.CheckBox
-            {
-                id: checkBoxSelected
-                visible: modelData.isDownloadable
-                Layout.alignment: Qt.AlignVCenter
-                Layout.preferredWidth: 130
-                text: catalog.i18nc("@action:button", "Add to selection")
-                checked: modelData.selected
-                onClicked: modelData.selected = checked
-            }
+        UM.CheckBox
+        {
+            id: checkBoxSelected
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.margins: UM.Theme.getSize("default_margin").height
+            visible: modelData.isDownloadable
+            text: catalog.i18nc("@action:button", "Add to selection")
+            checked: modelData.selected
+            onCheckedChanged: modelData.selected = checked
         }
 
         Cura.PrimaryButton
@@ -161,11 +153,5 @@ MouseArea
         {
             modelData.selected = !modelData.selected
         }
-    }
-
-    function isInside(item, x, y)
-    {
-        var point = item.mapFromItem(root, x, y)
-        return item.visible && point.x >= 0 && point.x <= item.width && point.y >= 0 && point.y <= item.height
     }
 }

@@ -30,9 +30,18 @@ class Part(BaseElement):
                       api: 'OnshapeApi',
                       on_finished: Callable[['QByteArray'], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        def load_default_thumbnail(request: 'QNetworkReply', error: 'QNetworkReply.NetworkError') -> None:
+            api.loadThumbnail(on_finished,
+                              on_error,
+                              document_id = self.document_id,
+                              workspace_id = self.workspace_id,
+                              tab_id = self.tab_id,
+                              part_id = self.id)
+
         api.loadThumbnail(on_finished,
-                          on_error,
+                          load_default_thumbnail if self.configuration else on_error,
                           document_id = self.document_id,
                           workspace_id = self.workspace_id,
                           tab_id = self.tab_id,
-                          part_id = self.id)
+                          part_id = self.id,
+                          configuration = self.configuration)

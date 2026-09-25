@@ -39,6 +39,7 @@ class BaseElement:
                  allow_single_child_shortcut: bool = False,
                  settable_as_default: bool = False,
                  has_thumbnail: bool = False,
+                 supports_configuration: bool = False,
                  is_searchable = False):
         """
         Base constructor
@@ -54,6 +55,7 @@ class BaseElement:
         :param allow_single_child_shortcut: Indicates whether this object may be hidden in case it has a single child, in which case we will
                                             directly navigate to it
         :param settable_as_default: Indicates whether this object can be set as default when loading the storages
+        :param supports_configuration: Indicates whether this object exposes configuration inputs
         """
 
         self.name: str = data['name'] if name is None and data is not None else name
@@ -62,6 +64,7 @@ class BaseElement:
         self.last_modified_date: Optional['datetime'] = (datetime.fromisoformat(data['modifiedAt']) if ('modifiedAt' in data and data['modifiedAt'] is not None) else None) if last_modified_date is None and data is not None else last_modified_date
         self.last_modified_by: Optional[str] = (data['modifiedBy']['name'] if ('modifiedBy' in data and data['modifiedBy'] is not None) else None) if last_modified_by is None and data is not None else last_modified_by
         self._has_thumbnail = has_thumbnail
+        self.supports_configuration = supports_configuration
         self.children_url: Optional[str] = (data['treeHref'] if ('treeHref' in data and data['treeHref'] is not None) else data['href'] if 'href' in data else None) if data is not None else None
         self.icon: Optional[str] = icon
         self.has_children: bool = has_children
@@ -139,16 +142,12 @@ class BaseElement:
         else:
             raise RuntimeError('Element has no children_url and no custom method to load children')
 
-    @property
-    def supports_configuration(self) -> bool:
-        return False
-
     def loadConfiguration(self,
                           api: 'OnshapeApi',
-                          on_finished: Callable[[Dict[str, Any]], None],
+                          on_finished: Callable[[List[Dict[str, Any]]], None],
                           on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
         """Method to be overridden by child classes that support Onshape configurations"""
-        on_finished({})
+        raise RuntimeError('Element declares supports_configuration but the loadConfiguration method is not overridden')
 
     def hasThumbnail(self) -> bool:
         return self._has_thumbnail

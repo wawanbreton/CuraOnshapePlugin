@@ -13,6 +13,8 @@ Item
 {
     id: root
 
+    UM.I18nCatalog{id: catalog; name:"onshape"}
+
     property var documentsModel
     signal elementSelected(var subModel)
     readonly property real iconSizeFactor: 1.2
@@ -48,26 +50,36 @@ Item
                 Layout.fillWidth: true
                 spacing: UM.Theme.getSize("narrow_margin").height
 
+                UM.Label
+                {
+                    Layout.fillWidth: true
+                    text: catalog.i18nc("@label", "Configurations")
+                    font: UM.Theme.getFont("medium_bold")
+                }
+
                 Repeater
                 {
                     model: documentsModel.configurationParameters
 
-                    ColumnLayout
+                    GridLayout
                     {
+                        columns: 2
                         Layout.fillWidth: true
-                        Layout.maximumWidth: 430
-                        spacing: UM.Theme.getSize("narrow_margin").height
+                        columnSpacing: UM.Theme.getSize("default_margin").width
 
                         UM.Label
                         {
-                            Layout.fillWidth: true
+                            Layout.preferredWidth: 140
+                            Layout.alignment: Qt.AlignVCenter
                             text: modelData.name
                             font: UM.Theme.getFont("small")
                             elide: Text.ElideRight
                         }
 
-                        ComboBox
+                        Cura.ComboBox
                         {
+                            Layout.fillWidth: true
+                            Layout.maximumWidth: 280
                             model: modelData.options
                             textRole: "name"
                             currentIndex: modelData.selectedIndex
