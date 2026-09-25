@@ -4,9 +4,9 @@ import json
 import tempfile
 import functools
 
-from PyQt6.QtCore import QObject, pyqtSlot, QUrlQuery, QUrl
+from PyQt6.QtCore import QObject, pyqtSlot, QUrlQuery, QUrl, QByteArray
 
-from typing import Callable, List, Dict, Optional, TYPE_CHECKING
+from typing import Callable, List, Dict, Any, Optional, TYPE_CHECKING
 
 from UM.Application import Application
 from UM.TaskManagement.HttpRequestManager import HttpRequestManager
@@ -26,7 +26,6 @@ from ..data.Document import Document
 from ..data.DocumentsTreeNode import DocumentsTreeNode
 
 if TYPE_CHECKING:
-    from PyQt6.QtCore import QByteArray
     from PyQt6.QtNetwork import QNetworkReply
 
 
@@ -210,17 +209,67 @@ class OnshapeApi(QObject):
                   document_id: str,
                   workspace_id: str,
                   tab_id: str,
+                  configuration: Optional[str],
                   on_finished: Callable[[List['DocumentsTreeNode']], None],
                   on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        """Lists the available parts in the given tab"""
+        """Lists the available parts in the given tab.
+
+        configuration is a semicolon-separated list of parameterId=option values,
+        for example List_abc=small;List_def=wide. The option values are the
+        Onshape option IDs, not their display names.
+        """
 
         url = QUrl(f'{self.API_ROOT}/parts/d/{document_id}/w/{workspace_id}/e/{tab_id}')
 
         query = QUrlQuery()
         query.addQueryItem('includeFlatParts', 'false')
+        if configuration is not None and len(configuration) > 0:
+            query.addQueryItem('configuration', configuration)
         url.setQuery(query)
 
-        self._call(url, on_finished, on_error, document_id=document_id, workspace_id=workspace_id, tab_id=tab_id)
+        self._call(url, on_finished, on_error, document_id=document_id, workspace_id=workspace_id, tab_id=tab_id, configuration=configuration)
+
+    def getConfiguration(self,
+                         document_id: str,
+                         workspace_id: str,
+                         tab_id: str,
+                         on_finished: Callable[[List[Dict[str, Any]]], None],
+                         on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        """Retrieves the visible enum inputs and their options for the given tab"""
+        def response_received(reply: 'QNetworkReply'):
+            data = json.loads(bytes(reply.readAll()).decode())
+            current_values = {
+                parameter['parameterId']: parameter.get('value')
+                for parameter in data.get('currentConfiguration', [])
+                if 'parameterId' in parameter
+            }
+            parameters = []
+            for parameter in data.get('configurationParameters', []):
+                if 'parameterId' not in parameter or not parameter.get('isVisible', True):
+                    continue
+
+                options = [
+                    {'name': option.get('optionName', option['option']), 'value': option['option']}
+                    for option in parameter.get('options', []) if 'option' in option
+                ]
+                if options:
+                    parameter_id = parameter['parameterId']
+                    parameters.append({
+                        'id': parameter_id,
+                        'name': parameter.get('parameterName', parameter_id),
+                        'options': options,
+                        'value': current_values.get(parameter_id, parameter.get('defaultValue'))
+                    })
+
+            on_finished(parameters)
+
+        url = f'{self.API_ROOT}/elements/d/{document_id}/w/{workspace_id}/e/{tab_id}/configuration'
+
+        self._http.get(url,
+                       scope = self._json_scope,
+                       callback = response_received,
+                       error_callback = on_error,
+                       timeout = self.DEFAULT_REQUEST_TIMEOUT)
 
     def loadThumbnail(self,
                       on_finished: Callable[['QByteArray'], None],
@@ -228,10 +277,40 @@ class OnshapeApi(QObject):
                       document_id: str,
                       workspace_id: Optional[str] = None,
                       tab_id: Optional[str] = None,
-                      part_id: Optional[str] = None) -> None:
+                      part_id: Optional[str] = None,
+                      configuration: Optional[str] = None) -> None:
         """Loads the thumbnail image of an element"""
         def response_received(reply: 'QNetworkReply'):
             on_finished(reply.readAll())
+
+        if part_id is not None and configuration:
+            def shaded_view_received(reply: 'QNetworkReply'):
+                try:
+                    data = json.loads(bytes(reply.readAll()).decode('utf-8'))
+                    images = data.get('images', [])
+                    if images:
+                        on_finished(QByteArray.fromBase64(images[0].encode('ascii')))
+                    else:
+                        on_error(reply, None)
+                except (ValueError, KeyError, TypeError):
+                    on_error(reply, None)
+
+            url = QUrl(f'{self.API_ROOT}/parts/d/{document_id}/w/{workspace_id}/e/{tab_id}/partid/{part_id}/shadedviews')
+            query = QUrlQuery()
+            query.addQueryItem('viewMatrix', '0.707107,0.707107,0,0,-0.408248,0.408248,0.816497,0,0.57735,-0.57735,0.57735,0')
+            query.addQueryItem('outputHeight', '300')
+            query.addQueryItem('outputWidth', '300')
+            query.addQueryItem('pixelSize', '0')
+            query.addQueryItem('edges', 'show')
+            query.addQueryItem('configuration', configuration)
+            url.setQuery(query)
+
+            self._http.get(url,
+                           scope = self._json_scope,
+                           callback = shaded_view_received,
+                           error_callback = on_error,
+                           timeout = self.DEFAULT_REQUEST_TIMEOUT)
+            return
 
         url = QUrl(f'{self.API_ROOT}/thumbnails/d/{document_id}{'/w/' + workspace_id if workspace_id is not None else ''}{'/e/' + tab_id if tab_id is not None else ''}{'/p/' + part_id if part_id is not None else ''}/s/{self.THUMBNAIL_SIZE}')
 
@@ -246,6 +325,7 @@ class OnshapeApi(QObject):
                       workspace_id: str,
                       tab_id: str,
                       parts_ids: List[str],
+                      configuration: Optional[str],
                       on_progress: Callable[[int, int], None],
                       on_finished: Callable[[str], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
@@ -266,6 +346,8 @@ class OnshapeApi(QObject):
         query.addQueryItem('partIds', ','.join(parts_ids))
         query.addQueryItem('units', 'millimeter')
         query.addQueryItem('mode', 'binary')
+        if configuration is not None and len(configuration) > 0:
+            query.addQueryItem('configuration', configuration)
 
         resolution = Application.getInstance().getPreferences().getValue('plugin_onshape/tesselation_resolution')
         if resolution == 'coarse':
