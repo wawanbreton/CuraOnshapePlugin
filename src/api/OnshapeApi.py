@@ -11,7 +11,6 @@ from typing import Callable, List, Dict, Any, Optional, TYPE_CHECKING
 from UM.Application import Application
 from UM.TaskManagement.HttpRequestManager import HttpRequestManager
 from UM.TaskManagement.HttpRequestScope import JsonDecoratorScope
-from UM.Logger import Logger
 
 from .ApiAuthScope import ApiAuthScope
 from .AcceptBinaryDataScope import AcceptBinaryDataScope
@@ -64,7 +63,6 @@ class OnshapeApi(QObject):
         """
 
         data_json = bytes(reply.readAll()).decode()
-        Logger.debug(str(data_json))
         data_json = json.loads(data_json)
 
         nodes = []
@@ -100,7 +98,6 @@ class OnshapeApi(QObject):
                 elif json_type == 'document-summary-search':
                     for search_hit in item['searchHits']:
                         type = search_hit['type']
-                        Logger.debug(type)
 
                         if type == 'part':
                             elements.append(Part(search_hit))
@@ -142,7 +139,6 @@ class OnshapeApi(QObject):
         """Internal convenience method to actually send a GET or POST request with the proper arguments"""
 
         if request_body is not None:
-            Logger.debug(f"POST {url.toString()}")
             self._http.post(url.toString(),
                             data = request_body.encode("utf-8"),
                             scope = self._json_scope,
@@ -150,7 +146,6 @@ class OnshapeApi(QObject):
                             error_callback = on_error,
                             timeout = OnshapeApi.DEFAULT_REQUEST_TIMEOUT)
         else:
-            Logger.debug(f"GET {url.toString()}")
             self._http.get(url.toString(),
                            scope = self._json_scope,
                            callback = functools.partial(self._onResponseReceived, on_finished = on_finished, **kwargs),
