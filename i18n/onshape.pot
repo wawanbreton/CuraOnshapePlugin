@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-29 21:42+0100\n"
+"POT-Creation-Date: 2026-10-12 21:53+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,6 +19,10 @@ msgstr ""
 
 msgctxt "@menu"
 msgid "From Onshape"
+msgstr ""
+
+msgctxt "@label:text"
+msgid "Search result"
 msgstr ""
 
 msgctxt "@label"
@@ -33,12 +37,20 @@ msgctxt "@action:button"
 msgid "Add to selection"
 msgstr ""
 
-msgctxt "@label"
-msgid "Loading ..."
+msgctxt "@action:button"
+msgid "Open and set as default"
+msgstr ""
+
+msgctxt "@textfield:placeholder"
+msgid "Search"
+msgstr ""
+
+msgctxt "@textfield:placeholder"
+msgid "Unable to search here"
 msgstr ""
 
 msgctxt "@label"
-msgid "Configurations"
+msgid "Loading ..."
 msgstr ""
 
 msgctxt "@title:window"
@@ -67,6 +79,10 @@ msgstr ""
 
 msgctxt "@button"
 msgid "Sign in again"
+msgstr ""
+
+msgctxt "@label"
+msgid "Configurations"
 msgstr ""
 
 msgctxt "@title:window"
