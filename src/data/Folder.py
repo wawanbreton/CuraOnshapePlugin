@@ -23,6 +23,7 @@ class Folder(BaseElement):
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
+                      configuration: Optional[str],
                       on_finished: Callable[[List['DocumentsTreeNode'], Optional[str], Optional[str]], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]):
         api.listDocuments(self.id, on_finished, on_error)

@@ -8,6 +8,8 @@ from UM.Logger import Logger
 from ..data.DocumentsTreeNode import DocumentsTreeNode
 from ..data.SearchResult import SearchResult
 
+from .ConfigurationParameter import ConfigurationParameter
+
 if TYPE_CHECKING:
     from PyQt6.QtNetwork import QNetworkReply
     from ..api.OnshapeApi import OnshapeApi
@@ -30,6 +32,8 @@ class DocumentsModel(QAbstractListModel):
         self._is_loading_next_page: bool = False
         self._url_load_next_page: Optional[str] = None
         self._request_body: Optional[str] = None
+        self._configuration_loaded: bool = False
+        self._configuration_parameters: List[ConfigurationParameter] = []
 
         if self.loaded:
             self._updateItems()
@@ -87,6 +91,16 @@ class DocumentsModel(QAbstractListModel):
     def loaded(self) -> bool:
         return self._node.children_loaded
 
+    configurationParametersChanged = pyqtSignal()
+
+    @pyqtProperty(list, notify = configurationParametersChanged)
+    def configurationParameters(self) -> List[ConfigurationParameter]:
+        return self._configuration_parameters
+
+    @pyqtProperty(bool, notify = configurationParametersChanged)
+    def hasConfigurationParameters(self) -> bool:
+        return len(self._configuration_parameters) > 0
+
     errorChanged = pyqtSignal()
 
     @pyqtProperty(bool, notify = errorChanged)
@@ -121,6 +135,13 @@ class DocumentsModel(QAbstractListModel):
 
     @pyqtSlot()
     def load(self) -> None:
+        if self._node.element.supports_configuration and not self._configuration_loaded:
+            self._loadConfiguration()
+            return
+
+        self._loadChildren()
+
+    def _loadChildren(self) -> None:
         def on_finished(children: List["DocumentsTreeNode"], url_load_next_page: Optional[str], request_body: Optional[str]):
             self._node.setChildren(children)
             self._setUrlLoadNextPage(url_load_next_page)
@@ -136,7 +157,36 @@ class DocumentsModel(QAbstractListModel):
             item.selected = False
 
         if not self.loaded:
-            self._node.element.loadChildren(self._api, on_finished, on_error)
+            self._node.element.loadChildren(self._api, self._buildConfigurationString(), on_finished, on_error)
+
+    def _loadConfiguration(self) -> None:
+        def on_finished(configuration: List[dict]):
+            self._configuration_loaded = True
+            self._configuration_parameters = [ConfigurationParameter(parameter) for parameter in configuration]
+
+            for parameter in self._configuration_parameters:
+                parameter.selectedIndexChanged.connect(self._onConfigurationParameterChanged)
+
+            self.configurationParametersChanged.emit()
+            self._loadChildren()
+
+        def on_error(request: "QNetworkReply", error: "QNetworkReply.NetworkError"):
+            self._load_error = request.errorString() + bytes(request.readAll()).decode()
+            self.errorChanged.emit()
+
+        self._node.element.loadConfiguration(self._api, on_finished, on_error)
+
+    def _buildConfigurationString(self) -> Optional[str]:
+        values = [
+            f'{parameter.parameterId}={parameter.selectedValue}'
+            for parameter in self._configuration_parameters
+            if len(parameter.selectedValue) > 0
+        ]
+        return ';'.join(values) if len(values) > 0 else None
+
+    def _onConfigurationParameterChanged(self) -> None:
+        self.clear()
+        self._loadChildren()
 
     @pyqtSlot()
     def loadNextPage(self) -> None:
@@ -180,6 +230,9 @@ class DocumentsModel(QAbstractListModel):
     @pyqtSlot()
     def refresh(self) -> None:
         self.clear()
+        self._configuration_loaded = False
+        self._configuration_parameters = []
+        self.configurationParametersChanged.emit()
         self.load()
 
     selectedItemsChanged = pyqtSignal()

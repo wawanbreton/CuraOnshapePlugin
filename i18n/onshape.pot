@@ -37,6 +37,10 @@ msgctxt "@label"
 msgid "Loading ..."
 msgstr ""
 
+msgctxt "@label"
+msgid "Configurations"
+msgstr ""
+
 msgctxt "@title:window"
 msgid "Onshape settings"
 msgstr ""

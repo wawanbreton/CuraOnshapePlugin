@@ -17,20 +17,31 @@ class Part(BaseElement):
                  data: Dict[str, Any],
                  document_id: Optional[str] = None,
                  workspace_id: Optional[str] = None,
-                 tab_id: Optional[str] = None):
+                 tab_id: Optional[str] = None,
+                 configuration: Optional[str] = None):
         super().__init__(data, id = data['partId'], has_children = False, is_downloadable = True, has_thumbnail = True)
 
         self.document_id: str = data['documentId'] if document_id is None else document_id
         self.workspace_id: str = data['versionOrWorkspaceId'] if workspace_id is None else workspace_id
         self.tab_id: str = data['elementId'] if tab_id is None else tab_id
+        self.configuration: Optional[str] = configuration
 
     def loadThumbnail(self,
                       api: 'OnshapeApi',
                       on_finished: Callable[['QByteArray'], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        def load_default_thumbnail(request: 'QNetworkReply', error: 'QNetworkReply.NetworkError') -> None:
+            api.loadThumbnail(on_finished,
+                              on_error,
+                              document_id = self.document_id,
+                              workspace_id = self.workspace_id,
+                              tab_id = self.tab_id,
+                              part_id = self.id)
+
         api.loadThumbnail(on_finished,
-                          on_error,
+                          load_default_thumbnail if self.configuration else on_error,
                           document_id = self.document_id,
                           workspace_id = self.workspace_id,
                           tab_id = self.tab_id,
-                          part_id = self.id)
+                          part_id = self.id,
+                          configuration = self.configuration)

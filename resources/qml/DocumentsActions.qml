@@ -7,8 +7,6 @@ Item
 {
     UM.I18nCatalog{id: catalog; name:"onshape"}
 
-    implicitHeight: UM.get
-
     Cura.PrimaryButton
     {
         id: buttonDownload

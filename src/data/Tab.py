@@ -17,16 +17,24 @@ class Tab(BaseElement):
     def __init__(self, data: Dict[str, Any], document_id: Optional[str] = None, workspace_id: Optional[str] = None):
         super().__init__(data,
                          id = data['elementId'] if 'elementId' in data else None,
-                         has_thumbnail = True)
+                         has_thumbnail = True,
+                         supports_configuration = True)
 
         self._document_id: str = data['documentId'] if document_id is None else document_id
         self._workspace_id: str = data['versionOrWorkspaceId'] if workspace_id is None else workspace_id
 
     def _loadChildren(self,
                       api: 'OnshapeApi',
+                      configuration: Optional[str],
                       on_finished: Callable[[List['DocumentsTreeNode'], Optional[str], Optional[str]], None],
                       on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
-        api.listParts(self._document_id, self._workspace_id, self.id, on_finished, on_error)
+        api.listParts(self._document_id, self._workspace_id, self.id, configuration, on_finished, on_error)
+
+    def loadConfiguration(self,
+                          api: 'OnshapeApi',
+                          on_finished: Callable[[List[Dict[str, Any]]], None],
+                          on_error: Callable[['QNetworkReply', 'QNetworkReply.NetworkError'], None]) -> None:
+        api.getConfiguration(self._document_id, self._workspace_id, self.id, on_finished, on_error)
 
     def loadThumbnail(self,
                       api: 'OnshapeApi',
